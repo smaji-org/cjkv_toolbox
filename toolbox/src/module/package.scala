@@ -1,0 +1,43 @@
+package org.smaji.cjkv_toolbox.toolbox.module
+import org.smaji.cjkv_toolbox.toolbox.{zoneUTC}
+
+
+import java.time.{LocalDateTime, OffsetDateTime}
+import scala.util.*
+import collection.immutable.ArraySeq
+
+type ArchName= String
+type OsName= String
+type ArchSet= Set[ArchName]
+type OsSet= Set[OsName]
+type OsHostMap= Map[OsName, ArchSet]
+
+case class Release(
+  val module: Module,
+  val version: String,
+  val dateTime: OffsetDateTime=
+    OffsetDateTime.now(zoneUTC),
+  val comment: String= "",
+  val platforms: OsHostMap,
+  )
+{
+  private val version_desc= version match
+    case "" | null => Array[String]()
+    case version => version.split("\\.")
+  val major= version_desc.unapply(0).getOrElse("0").toInt
+  val minor= version_desc.unapply(1).getOrElse("0").toInt
+  val patch= version_desc.unapply(2).getOrElse("0").toInt
+  val suffix= version_desc.unapply(3)
+}
+
+class Module(val name: String, val description: String, var releases: ArraySeq[Release]) {
+  def this(name: String, description: String)=
+    this(name, description, ArraySeq())
+  /*
+  def appendRelease(release: Release)=
+    releases= releases.appended(release)
+  def prependRelease(release: Release)=
+    releases.prepended(release)
+  */
+}
+
