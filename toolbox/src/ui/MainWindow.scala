@@ -58,7 +58,16 @@ object MainWindow {
     val currentSize= frame.getSize()
     currentSize.height= Math.max((currentSize.width * 3 / 4), currentSize.height)
     frame.setMinimumSize(currentSize)
+
+    setupPanelConfig(configSignal)
+
     frame.setVisible(true)
+  }
+
+  def setupPanelConfig(signals: ConfigSignal)= {
+    signals.update.check.add { msg =>
+      module.Manager.updateNow()
+    }
   }
 
   def setupMenubar()= {

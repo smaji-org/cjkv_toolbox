@@ -4,18 +4,30 @@ import java.nio.file.{Path, Paths, Files}
 
 val debug= true
 
+
+lazy val jarPath= {
+  class Self {}
+  Paths.get(
+    classOf[Self]
+      .getProtectionDomain().getCodeSource()
+      .getLocation().getPath())
+}
+
 lazy val hostArch= {
   System.getProperty("os.arch") match
     case "x86" => "386"
     case "x86_64" => "amd64"
-    case arch => arch
+    case arch => arch.toLowerCase()
 }
+
+val anyArch= "any"
+val anyOs= "any"
 
 lazy val hostOs= {
   System.getProperty("os.name") match
     case os if os.startsWith("Windows") => "windows"
     case os if os.startsWith("Mac OS X") => "darwin"
-    case os => os
+    case os => os.toLowerCase()
 }
 
 lazy val configDir= {
@@ -26,7 +38,7 @@ lazy val configDir= {
     case _ => Paths.get(System.getProperty("user.home"), (".config" +: skel)*)
 }
 
-lazy val moduleDir= configDir.resolve("module")
+lazy val modulesDir= configDir.resolve("module")
 
 lazy val zoneUTC= {
   import java.time.*

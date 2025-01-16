@@ -30,14 +30,6 @@ case class Release(
   val suffix= version_desc.unapply(3)
 }
 
-class Module(val name: String, val description: String, var releases: ArraySeq[Release]) {
-  def this(name: String, description: String)=
-    this(name, description, ArraySeq())
-  /*
-  def appendRelease(release: Release)=
-    releases= releases.appended(release)
-  def prependRelease(release: Release)=
-    releases.prepended(release)
-  */
+case class Module(val name: String, val description: String, var releases: ArraySeq[Release]) {
 }
 

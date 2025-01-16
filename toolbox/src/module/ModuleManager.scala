@@ -5,7 +5,7 @@ import org.smaji.cjkv_toolbox.toolbox.*
 import util.*
 import control.TailCalls.*
 
-import org.smaji.cjkv_toolbox.toolbox.{CjkvDownloader, moduleDir}
+import org.smaji.cjkv_toolbox.toolbox.{CjkvDownloader, modulesDir}
 import org.smaji.cjkv_toolbox.toolbox.config
 
 import java.nio.file.{Path, Paths, Files}
@@ -45,7 +45,7 @@ object Manager {
     import javax.xml.xpath
     import XPathOps.*
 
-    val modulePath= moduleDir.resolve("index.xml")
+    val modulePath= modulesDir.resolve("index.xml")
     val moduleIndexFile= modulePath.toFile()
     val xmlBuilder= xmlParsers.DocumentBuilderFactory.newInstance().newDocumentBuilder()
     val transformer = xmlTransform.TransformerFactory.newInstance().newTransformer()
@@ -122,7 +122,7 @@ object Manager {
         Release(module, version, datetime, comment, platforms)
       }
 
-      val module= Module(name, description)
+      val module= Module(name, description, ArraySeq())
       val releases=
         try
           xpathEval.getNodeSet("releases/release", elem) match
@@ -136,15 +136,39 @@ object Manager {
       module
     }
     
+    def fitReleases(releases: ArraySeq[Release])=
+      releases
+        .map { release =>
+          val allPlatforms= release.platforms
+          val fitPlatforms= allPlatforms
+            .view
+            .filter((os, _)=>
+              os == anyOs || os == hostOs)
+            .map((os, archs)=>
+              (os, archs.filter(arch => arch == anyArch || arch == hostArch)))
+            .filter((_, archs)=> archs.nonEmpty)
+            .toMap
+          release.copy(platforms= fitPlatforms)
+        }
+        .filter(_.platforms.nonEmpty)
+
+    def fitModules(modules: ArraySeq[Module])=
+      modules
+        .map { module=>
+          module.copy(releases= fitReleases(module.releases))
+        }
+        .filter(_.releases.nonEmpty)
+
     toolbox= loadModule(elemToolbox)
     modules=
       try
         xpathEval.getNodeSet("modules/module", elemCjkv) match
           case null=> ArraySeq[Module]()
           case nodeList: dom.NodeList =>
-            nodeList.asScala
-              .map(_.asInstanceOf[dom.Element])
-              .map(loadModule)
+            fitModules(
+              nodeList.asScala
+                .map(_.asInstanceOf[dom.Element])
+                .map(loadModule))
       catch _ =>
         ArraySeq[Module]()
 
@@ -152,7 +176,7 @@ object Manager {
   }
 
   val updateIndex: Runnable= () => {
-    cjkvDownloader.downloadAndExtract("/index.xml.tgz", moduleDir)
+    cjkvDownloader.downloadAndExtract("/index.xml.tgz", modulesDir)
     loadIndex()
     updateIndexTask= executor.schedule(updateIndex, updateInterval, TimeUnit.SECONDS)
   }
@@ -160,7 +184,7 @@ object Manager {
   val executor = Executors.newSingleThreadScheduledExecutor()
 
   var updateIndexTask=
-    if Files.exists(moduleDir.resolve("index.xml")) then
+    if Files.exists(modulesDir.resolve("index.xml")) then
       loadIndex()
       executor.schedule(updateIndex, updateInterval, TimeUnit.SECONDS)
     else
