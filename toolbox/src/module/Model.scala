@@ -38,8 +38,9 @@ class ModulesModel extends AbstractTableModel {
     col match {
       case 0=> "Name"
       case 1=> "Description"
-      case 2=> "Installed"
-      case 3=> "Version"
+      case 2=> "Enable"
+      case 3=> "Installed"
+      case 4=> "Latest"
     }
   override def getColumnClass(col: Int): Class[?]=
     import java.lang.*
@@ -48,8 +49,9 @@ class ModulesModel extends AbstractTableModel {
       case 1=> classOf[String]
       case 2=> classOf[Boolean]
       case 3=> classOf[String]
+      case 4=> classOf[String]
     }
-  override def getColumnCount()= 4
+  override def getColumnCount()= 5
   override def getRowCount()= nodes.length
   override def getValueAt(row: Int, col: Int):
     java.lang.String | java.lang.Boolean=
@@ -60,6 +62,7 @@ class ModulesModel extends AbstractTableModel {
         case 1=> nodes(row).module.description
         case 2=> nodes(row).installed.isDefined
         case 3=> nodes(row).installed getOrElse ""
+        case 4=> nodes(row).module.releases(0).version
       }
     } else {
       ""
@@ -73,9 +76,11 @@ class ModulesModel extends AbstractTableModel {
       signal.pub(nodes(row), value.asInstanceOf[Boolean])
     }
   }
+  /*
   def doneModuleSetup(name: String, installed: Option[String]): Unit = {
     nodes.find(_.module.name == name).foreach(_.installed= installed)
     fireTableDataChanged()
   }
+  */
 }
 

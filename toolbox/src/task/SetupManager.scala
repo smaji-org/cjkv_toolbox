@@ -10,6 +10,7 @@ object Manager {
   import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
   import java.nio.file.{Path, Paths, Files}
   import java.io.File
+  // parallel tasking is not allowed
   val executor = Executors.newSingleThreadScheduledExecutor()
 
   val toolboxDir= jarPath.getParent()

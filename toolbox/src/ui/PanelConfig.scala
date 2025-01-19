@@ -10,7 +10,7 @@ class ConfigSignal {
     val autoModules= Pub[Boolean]()
     val toobox= Pub[Unit]()
     val modules= Pub[Unit]()
-    val period= Pub[Int]()
+    val interval= Pub[Int]()
     val check= Pub[Unit]()
   }
 
@@ -81,22 +81,30 @@ def createPanelConfig(emHeight: Int, padding: Int)= {
   panelUpdateModules.add(btnUpdateModules)
 
   panelUpdatePerodic.setLineBoxLayout()
-  val periodicTime= JComboBox[String]()
-  periodicTime.addItem("6 hours")
-  periodicTime.addItem("24 hours")
-  periodicTime.addItem("4 days")
-  periodicTime.setMaximumSize(periodicTime.getPreferredSize())
+  val intervalTime= IntervalComboBox()
+  intervalTime.setMaximumSize(intervalTime.getPreferredSize())
 
-  panelUpdatePerodic.add(periodicTime)
+  panelUpdatePerodic.add(intervalTime)
   panelUpdatePerodic.add(JLabel("Periodic update check"))
   panelUpdatePerodic.add(Box.createHorizontalGlue())
   val btnUpdateCheck= JButton("Check now")
   panelUpdatePerodic.add(btnUpdateCheck)
 
+  // panelUpdate loadConfig
+  checkUpdateToolbox.setSelected(config.Manager.update.toolbox)
+  checkUpdateModules.setSelected(config.Manager.update.modules)
+  intervalTime.setSelectedInterval {
+    val interval= config.Manager.update.interval
+    if interval <= 0 then 60*60*24*4 else interval
+  }
+
   // panelUpdate signal
 
   checkUpdateToolbox.addActionListener(_ =>
-    configSignal.update.autoToolbox.pub(checkUpdateToolbox.isSelected())
+    val isSelected= checkUpdateToolbox.isSelected()
+    btnUpdateToolbox.setVisible(!isSelected)
+    config.Manager.update.toolbox= isSelected
+    configSignal.update.autoToolbox pub isSelected
   )
 
   btnUpdateToolbox.addActionListener(_ =>
@@ -104,15 +112,20 @@ def createPanelConfig(emHeight: Int, padding: Int)= {
   )
 
   checkUpdateModules.addActionListener(_ =>
-    configSignal.update.autoModules.pub(checkUpdateModules.isSelected())
+    val isSelected= checkUpdateModules.isSelected()
+    btnUpdateModules.setVisible(!isSelected)
+    config.Manager.update.modules= isSelected
+    configSignal.update.autoModules pub isSelected
   )
 
   btnUpdateModules.addActionListener(_ =>
     configSignal.update.modules pub ()
   )
 
-  periodicTime.addActionListener(_ =>
-    configSignal.update.period.pub(periodicTime.getSelectedIndex())
+  intervalTime.addActionListener(_ =>
+    val interval= intervalTime.getSelectedInterval()
+    config.Manager.update.interval= interval
+    configSignal.update.interval pub interval
   )
 
   btnUpdateCheck.addActionListener(_ =>
@@ -132,15 +145,29 @@ def createPanelConfig(emHeight: Int, padding: Int)= {
   panelStartup.add(checkMinimized)
   panelStartup.add(Box.createVerticalGlue())
 
+  // panelStartup loadConfig
+
+  checkAutostart.setSelected(config.Manager.startup.autostart)
+  checkMinimized.setSelected(config.Manager.startup.minimized)
+
   // panelStartup signal
 
   checkAutostart.addItemListener(_ =>
-    configSignal.start.auto.pub(checkAutostart.isSelected())
+    val isSelected= checkAutostart.isSelected()
+    config.Manager.startup.autostart= isSelected
+    configSignal.start.auto pub isSelected
   )
 
   checkMinimized.addItemListener(_ =>
-    configSignal.start.minimized.pub(checkMinimized.isEnabled())
+    val isSelected= checkMinimized.isSelected()
+    config.Manager.startup.minimized= isSelected
+    configSignal.start.minimized pub isSelected
   )
 
-  (panelConfig, configSignal)
+  def postSetup()= {
+    btnUpdateToolbox.setVisible(!checkUpdateToolbox.isSelected())
+    btnUpdateModules.setVisible(!checkUpdateModules.isSelected())
+  }
+
+  (panelConfig, configSignal, postSetup _)
 }

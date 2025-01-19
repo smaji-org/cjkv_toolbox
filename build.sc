@@ -18,8 +18,6 @@ object toolbox extends ScalaModule {
     ivy"com.lihaoyi::scalatags:0.13.1",
     ivy"com.lihaoyi::mainargs:0.7.6",
     ivy"org.apache.commons:commons-compress:1.27.1",
-    ivy"org.netbeans.api:org-netbeans-swing-outline:RELEASE240",
-    ivy"org.netbeans.modules:org-openide-util-ui-svg:RELEASE240",
   )
   /*
   object test extends ScalaTests {

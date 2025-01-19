@@ -46,27 +46,36 @@ object MainWindow {
     val iconConfig= ImageIcon(loadImage("images/config.png", emHeight))
 
     val (panelModules, moduleSignal)= createPanelModules(emHeight, padding)
-    val (panelConfig, configSignal)= createPanelConfig(emHeight, padding)
+    val (panelConfig, configSignal, panelConfigPostSetup)= createPanelConfig(emHeight, padding)
     module.Manager.public()
 
-    tabbedPane.addTab("Modules ", iconModules, panelModules)
     tabbedPane.addTab("Config ", iconConfig, panelConfig)
-
     content.add(tabbedPane)
-
     frame.pack()
+    tabbedPane.insertTab("Modules ", iconModules, panelModules, null, 0)
+    tabbedPane.setSelectedIndex(0)
+
     val currentSize= frame.getSize()
     currentSize.height= Math.max((currentSize.width * 3 / 4), currentSize.height)
     frame.setMinimumSize(currentSize)
 
     setupPanelConfig(configSignal)
+    panelConfigPostSetup()
 
     frame.setVisible(true)
   }
 
   def setupPanelConfig(signals: ConfigSignal)= {
     signals.update.check.add { msg =>
-      module.Manager.updateNow()
+      module.Manager.updateIndexNow()
+    }
+
+    signals.update.interval.add { interval =>
+      module.Manager.resetTask(interval)
+    }
+
+    signals.update.modules.add { _ =>
+      module.Manager.updateModules()
     }
   }
 

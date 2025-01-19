@@ -15,26 +15,99 @@ import java.util.stream.Collectors
 import java.io.StringReader
 import java.io.StringBufferInputStream
 import scala.collection.immutable.ArraySeq
+import java.time.OffsetDateTime
+import javax.swing.SwingUtilities
+import java.util.concurrent.CompletableFuture
 
 class ModuleSignal {
   val updated= Pub[(Module, ArraySeq[Module])]()
+  val busying= Pub[Boolean]
 }
 
 object Manager {
-  val defaultInterval= 60*60*6 // 6 hours
-  var updateInterval= config.Manager.update.interval
-  if (updateInterval <= 0) {
-    updateInterval= defaultInterval
-    config.Manager.update.interval= updateInterval
+  val defaultInterval= 60*60*24 // 1 day
+  if (config.Manager.update.interval <= 0) {
+    config.Manager.update.interval= defaultInterval
   }
   val cjkvDownloader= CjkvDownloader()
 
   var toolbox: Module= null
   var modules= ArraySeq[Module]()
 
+  val model= module.ModulesModel()
   val signal= ModuleSignal()
 
   import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
+
+  val indexExecutor = Executors.newSingleThreadScheduledExecutor()
+  val updateExecutor = Executors.newSingleThreadScheduledExecutor()
+
+  model.signal.add { (node, selected)=>
+    if (node.installed.isDefined && !selected) {
+      uninstall(node)
+    } else if (node.installed.isEmpty && selected) {
+      install(node)
+    }
+
+    // modulesModle.doneModuleSetup(node.module.name, if install then Some("hi") else None)
+  }
+
+  def uninstall(node: ModuleNode, oneshot: Boolean= true)= {
+    if oneshot then signal.busying.pub(true)
+    val unistallSignal= setup.Manager.uninstall(node)
+    unistallSignal.add { r =>
+      if oneshot then signal.busying.pub(false)
+      r match {
+        case Failure(exception) =>
+          println(exception)
+        case Success(0) =>
+          node.installed= None
+          model.fireTableDataChanged()
+          config.Manager.modules=
+            config.Manager.modules.removed(node.module.name)
+        case Success(_) => println("uninstall failed")
+      }
+    }
+    unistallSignal
+  }
+
+  def fUninstall(node: ModuleNode, oneshot: Boolean= true)= {
+    val f= CompletableFuture[Try[Int]]()
+    val r= uninstall(node, oneshot)
+    r.add(f.complete(_))
+    f
+  }
+
+  def install(node: ModuleNode, oneshot: Boolean= true)= {
+    if oneshot then signal.busying.pub(true)
+    val release= node.module.releases.head
+    val installSignal= setup.Manager.install(release)
+    installSignal.add { r =>
+      if oneshot then signal.busying.pub(false)
+      r match {
+        case Failure(exception) =>
+          println(exception)
+        case Success(0) =>
+          val name= node.module.name
+          val version= release.version
+          val datetime= OffsetDateTime.now(zoneUTC)
+          val moduleInfo= InstalledModuleInfo(name, version, datetime)
+          node.installed= Some(release.version)
+          model.fireTableDataChanged()
+          config.Manager.modules=
+            config.Manager.modules.updated(name, moduleInfo)
+        case Success(_) => println("install failed")
+      }
+    }
+    installSignal
+  }
+
+  def fInstall(node: ModuleNode, oneshot: Boolean= true)= {
+    val f= CompletableFuture[Try[Int]]()
+    val r= install(node, oneshot)
+    r.add(f.complete(_))
+    f
+  }
 
   def loadIndex()= {
     import collection.immutable.ArraySeq
@@ -172,31 +245,77 @@ object Manager {
       catch _ =>
         ArraySeq[Module]()
 
+    val moduleInstalled= config.Manager.modules
+    val moduleNodes= modules.map { m =>
+      val installedVersion= moduleInstalled
+        .find((name, info)=>
+          m.name == name && m.releases.exists(_.version == info.version))
+        .map((name, info)=> info.version)
+      module.ModuleNode(m, installedVersion)
+    }
+    model.loadModuleInfo(moduleNodes)
+
     signal.updated.pub(toolbox, modules)
+    if config.Manager.update.modules then updateModules()
   }
 
   val updateIndex: Runnable= () => {
     cjkvDownloader.downloadAndExtract("/index.xml.tgz", modulesDir)
     loadIndex()
-    updateIndexTask= executor.schedule(updateIndex, updateInterval, TimeUnit.SECONDS)
+    updateIndexTask= indexExecutor.schedule(updateIndex, config.Manager.update.interval, TimeUnit.SECONDS)
   }
 
-  val executor = Executors.newSingleThreadScheduledExecutor()
 
   var updateIndexTask=
     if Files.exists(modulesDir.resolve("index.xml")) then
       loadIndex()
-      executor.schedule(updateIndex, updateInterval, TimeUnit.SECONDS)
+      indexExecutor.schedule(updateIndex, config.Manager.update.interval, TimeUnit.SECONDS)
     else
-      executor.schedule(updateIndex, 0, TimeUnit.SECONDS)
+      indexExecutor.submit(updateIndex)
 
-  def updateNow()= {
+  def resetTask(interval: Int = config.Manager.update.interval)= {
     if (updateIndexTask.cancel(false)) {
-      executor.schedule(updateIndex, 0, TimeUnit.SECONDS)
+      indexExecutor.schedule(updateIndex, interval, TimeUnit.SECONDS)
     }
   }
 
+  def updateIndexNow()= {
+    if (updateIndexTask.cancel(false)) {
+      indexExecutor.schedule(updateIndex, 0, TimeUnit.SECONDS)
+    }
+  }
+
+  def updateToolbox()= {
+  }
+
+  def updateModules()= {
+    signal.busying.pub(true)
+    val task: Runnable= ()=> {
+      // now in a new thread
+      Try {
+        model.nodes.foreach { node=>
+          node.installed.foreach { current =>
+            if (current != node.module.releases(0).version) {
+              SwingUtilities.invokeAndWait { ()=>
+                fUninstall(node, false).thenAccept { r=>
+                  r match {
+                    case Success(0) => fInstall(node, false)
+                    // we don't wait here because the installation task will run in another singleThreadExecutor, hence this invokation wont block the swing thread, and the installation task are run one by one
+                    case _=> ()
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      SwingUtilities.invokeLater(()=> signal.busying.pub(false))
+    }
+    CompletableFuture.runAsync(task, updateExecutor)
+  }
+
   def init()= ()
+
   def public()=
     signal.updated.pub(toolbox, modules)
 }
