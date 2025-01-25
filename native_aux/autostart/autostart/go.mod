@@ -1,0 +1,5 @@
+module github.com/smaji-org/cjkv_toolbox_autostart
+
+go 1.18
+
+require golang.org/x/sys v0.29.0
