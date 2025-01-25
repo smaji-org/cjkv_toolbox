@@ -4,6 +4,7 @@ import java.nio.file.{Path, Paths, Files}
 
 val debug= true
 
+val version= "0.1.0"
 
 lazy val jarPath= {
   class Self {}

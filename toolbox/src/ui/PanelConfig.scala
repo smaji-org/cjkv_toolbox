@@ -8,7 +8,7 @@ class ConfigSignal {
   object update {
     val autoToolbox= Pub[Boolean]()
     val autoModules= Pub[Boolean]()
-    val toobox= Pub[Unit]()
+    val toolbox= Pub[Unit]()
     val modules= Pub[Unit]()
     val interval= Pub[Int]()
     val check= Pub[Unit]()
@@ -108,7 +108,7 @@ def createPanelConfig(emHeight: Int, padding: Int)= {
   )
 
   btnUpdateToolbox.addActionListener(_ =>
-    configSignal.update.toobox pub ()
+    configSignal.update.toolbox pub ()
   )
 
   checkUpdateModules.addActionListener(_ =>

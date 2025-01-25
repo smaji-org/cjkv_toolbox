@@ -62,7 +62,10 @@ object MainWindow {
     setupPanelConfig(configSignal)
     panelConfigPostSetup()
 
-    frame.setVisible(true)
+    if (config.Manager.startup.minimized) {
+    } else {
+      frame.setVisible(true)
+    }
   }
 
   def setupPanelConfig(signals: ConfigSignal)= {
@@ -72,6 +75,10 @@ object MainWindow {
 
     signals.update.interval.add { interval =>
       module.Manager.resetTask(interval)
+    }
+
+    signals.update.toolbox.add { _ =>
+      module.Manager.updateToolbox()
     }
 
     signals.update.modules.add { _ =>

@@ -32,6 +32,7 @@ object Manager {
   private val defaultConfig=
     s"""<?xml version="1.0" encoding="UTF-8" ?>
        |<toolbox>
+       |  <version>0.1.0</version>
        |  <repositories>
        |    <repository>
        |      <name>${defaultRepo.name}</name>

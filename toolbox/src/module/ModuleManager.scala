@@ -18,10 +18,22 @@ import scala.collection.immutable.ArraySeq
 import java.time.OffsetDateTime
 import javax.swing.SwingUtilities
 import java.util.concurrent.CompletableFuture
+import java.io.FileNotFoundException
 
 class ModuleSignal {
   val updated= Pub[(Module, ArraySeq[Module])]()
   val busying= Pub[Boolean]
+
+  var counter= 0
+  def incTask()= synchronized {
+    counter+= 1
+    if counter == 1 then busying.pub(true)
+  }
+  def decTask()= synchronized {
+    if counter > 0 then
+      counter-= 1
+      if counter == 0 then busying.pub(false)
+  }
 }
 
 object Manager {
@@ -233,6 +245,7 @@ object Manager {
         .filter(_.releases.nonEmpty)
 
     toolbox= loadModule(elemToolbox)
+    toolbox= toolbox.copy(releases= fitReleases(toolbox.releases))
     modules=
       try
         xpathEval.getNodeSet("modules/module", elemCjkv) match
@@ -257,6 +270,7 @@ object Manager {
 
     signal.updated.pub(toolbox, modules)
     if config.Manager.update.modules then updateModules()
+    if config.Manager.update.toolbox then updateToolbox()
   }
 
   val updateIndex: Runnable= () => {
@@ -286,10 +300,18 @@ object Manager {
   }
 
   def updateToolbox()= {
+    signal.busying.get() match {
+      case Some(true)=> signal.busying.add { busying=>
+        if (!busying) {
+          setup.Manager.installToolbox(toolbox)
+        }
+      }
+      ()
+      case _ => setup.Manager.installToolbox(toolbox)
+    }
   }
 
   def updateModules()= {
-    signal.busying.pub(true)
     val task: Runnable= ()=> {
       // now in a new thread
       Try {
@@ -297,20 +319,13 @@ object Manager {
           node.installed.foreach { current =>
             if (current != node.module.releases(0).version) {
               SwingUtilities.invokeAndWait { ()=>
+                signal.incTask()
                 fUninstall(node, false).thenAccept { r=>
                   r match {
-                    case Success(0) => fInstall(node, false)
-                    // we don't wait here because the installation task will run in another singleThreadExecutor, hence this invokation wont block the swing thread, and the installation task are run one by one
-                    case _=> ()
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-      SwingUtilities.invokeLater(()=> signal.busying.pub(false))
-    }
+                    case Success(0) =>
+                      fInstall(node, false).thenAccept(_=> signal.decTask())
+                    case _=> signal.decTask()
+                  } } } } } } } }
     CompletableFuture.runAsync(task, updateExecutor)
   }
 

@@ -5,6 +5,7 @@ import org.smaji.cjkv_toolbox.toolbox.*
 import javax.swing.SwingUtilities
 import scala.util.*
 import java.io.FileNotFoundException
+import java.util.concurrent.CompletableFuture
 
 object Manager {
   import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
@@ -66,6 +67,12 @@ object Manager {
     done
   }
 
+  def fInstall(release: module.Release)= {
+    val f= CompletableFuture[Try[Int]]()
+    install(release).add(f.complete(_))
+    f
+  }
+
   def uninstall(node: module.ModuleNode)= {
     val m= node.module
     val done= Pub[Try[Int]]
@@ -100,5 +107,50 @@ object Manager {
     }
     executor.submit(perform)
     done
+  }
+
+  def fUninstall(node: module.ModuleNode)= {
+    val f= CompletableFuture[Try[Int]]()
+    uninstall(node).add(f.complete(_))
+    f
+  }
+
+  def installToolbox(toolbox: module.Module)= {
+    val release= toolbox.releases.head
+    println(s"try to install toolbox ${release.version}")
+    if (version != release.version) {
+
+      val m= release.module
+      val (os, archs)= release.platforms.head
+
+      val r= Try {
+        println(s"install ${m.name}, $os, ${archs.head}")
+        import scala.sys.process.*
+        val downloader= CjkvDownloader()
+        val target= s"/module/${m.name}/${release.version}/$os/${archs.head}/${m.name}.tgz"
+        downloader.downloadAndExtract(target, modulesDir) match
+          case Failure(exception) => throw(exception)
+          case Success(value) => ()
+        val moduleDir= modulesDir.resolve(m.name)
+        val installerPath= {
+          val exePath= moduleDir.resolve("installer.exe")
+          val jarPath= moduleDir.resolve("installer.jar")
+          if (Files.exists(exePath)) {
+            exePath
+          } else if (Files.exists(jarPath)) {
+            jarPath
+          } else {
+            throw FileNotFoundException(exePath.toString)
+          }
+        }
+        File(installerPath.toString).setExecutable(true)
+        val p= Process(
+          Seq(
+            startPath.toString, installerPath.toString)
+          ++ createCommandOpts(m.name)
+          ).run()
+        System.exit(0)
+      }
+    }
   }
 }

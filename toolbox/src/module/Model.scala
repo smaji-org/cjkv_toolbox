@@ -8,7 +8,6 @@ import java.awt.{print as awtPrint, *}
 import javax.swing.*
 import tree.*
 
-import org.netbeans.swing.outline.*
 import scala.jdk.CollectionConverters.*
 import org.smaji.cjkv_toolbox.toolbox.Pub
 import javax.swing.table.AbstractTableModel
