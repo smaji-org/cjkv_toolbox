@@ -12,6 +12,9 @@ import java.io.File
 object MainWindow {
   import ContainerOps.*
 
+  val scale= config.Manager.ui.scale
+  System.setProperty("sun.java2d.uiScale", scale.toString)
+
   lazy val icon= loadImage("images/toolbox.png")
   lazy val trayIcon=
     val trayIcon= TrayIcon(icon.getImage(), "CJKV Toolbox")
@@ -84,6 +87,8 @@ object MainWindow {
     signals.update.modules.add { _ =>
       module.Manager.updateModules()
     }
+
+    signals.start.auto.add(startup.Manager.setAutostart(_))
   }
 
   def setupMenubar()= {

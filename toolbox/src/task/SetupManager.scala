@@ -14,13 +14,12 @@ object Manager {
   // parallel tasking is not allowed
   val executor = Executors.newSingleThreadScheduledExecutor()
 
-  val toolboxDir= jarPath.getParent()
-  val startPath= toolboxDir.resolve("start")
+  val startPath= toolboxDir.resolve("cjkv_toolbox_start")
 
   def createCommandOpts(name: String)=
     Seq(
       "--module-dir", modulesDir.resolve(name).toString,
-      "--toolbox-dir", jarPath.getParent().toString,
+      "--toolbox-dir", toolboxDir.toString,
       "config-dir", configDir.toString)
 
   def install(release: module.Release)= {

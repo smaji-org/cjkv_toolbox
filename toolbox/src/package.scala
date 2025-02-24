@@ -6,14 +6,6 @@ val debug= true
 
 val version= "0.1.0"
 
-lazy val jarPath= {
-  class Self {}
-  Paths.get(
-    classOf[Self]
-      .getProtectionDomain().getCodeSource()
-      .getLocation().getPath())
-}
-
 lazy val hostArch= {
   System.getProperty("os.arch") match
     case "x86" => "386"
@@ -31,12 +23,34 @@ lazy val hostOs= {
     case os => os.toLowerCase()
 }
 
+lazy val javaHome= Paths.get(System.getProperty("java.home"))
+
+lazy val jarPath= {
+  class Self {}
+  val url= classOf[Self]
+    .getProtectionDomain().getCodeSource()
+    .getLocation().toString()
+
+  val fileSchema= "file:/"
+  if url.startsWith(fileSchema) then
+    Paths.get(url.drop(fileSchema.length))
+  else
+    Paths.get(url)
+}
+
+lazy val toolboxDir= jarPath.getParent()
+
+lazy val userConfigDir= {
+  hostOs match
+    case "windows" => Paths.get(System.getenv("AppData"))
+    case _ => Option(System.getenv("XDG_CONFIG_HOME")).map(Paths.get(_))
+      .getOrElse(Paths.get(System.getProperty("user.home"), ".config"))
+}
+
 lazy val configDir= {
   val skel= Seq("smaji", "cjkv_toolbox")
 
-  hostOs match
-    case "windows" => Paths.get(System.getenv("AppData"), skel*)
-    case _ => Paths.get(System.getProperty("user.home"), (".config" +: skel)*)
+  Paths.get(userConfigDir.toString(), skel*)
 }
 
 lazy val modulesDir= configDir.resolve("module")

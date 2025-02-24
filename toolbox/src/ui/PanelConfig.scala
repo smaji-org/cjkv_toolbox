@@ -5,6 +5,10 @@ import java.awt.*
 import javax.swing.*
 
 class ConfigSignal {
+  object ui {
+    val scale= Pub[Int]()
+  }
+
   object update {
     val autoToolbox= Pub[Boolean]()
     val autoModules= Pub[Boolean]()
@@ -34,6 +38,12 @@ def createPanelConfig(emHeight: Int, padding: Int)= {
   panelConfig.setPageBoxLayout()
   panelConfig.setBorder(EmptyBorder(paddingSet))
 
+  val panelUiWrap= JPanel()
+  panelUiWrap.setBorder(EtchedBorder())
+  panelUiWrap.setLayout(GridLayout(1,1))
+  val panelUi= JPanel()
+  panelUiWrap.add(panelUi)
+
   val panelUpdateWrap= JPanel()
   panelUpdateWrap.setBorder(EtchedBorder())
   panelUpdateWrap.setLayout(GridLayout(1,1))
@@ -46,9 +56,40 @@ def createPanelConfig(emHeight: Int, padding: Int)= {
   val panelStartup= JPanel()
   panelStartupWrap.add(panelStartup)
 
+  panelConfig.add(panelUiWrap)
   panelConfig.add(panelUpdateWrap)
   panelConfig.add(panelStartupWrap)
 
+  // panelUi ui
+
+  panelUi.setPageBoxLayout()
+  panelUi.setBorder(EmptyBorder(paddingSet))
+
+  panelUi.add(Box.createVerticalGlue())
+  val panelUiScale= JPanel()
+  panelUi.add(panelUiScale)
+  panelUi.add(Box.createVerticalGlue())
+
+  panelUiScale.setLineBoxLayout()
+  val scaleSelector= JComboBox()
+  for i <- 1 to 8 do
+    scaleSelector.addItem(i.toString)
+  scaleSelector.setMaximumSize(scaleSelector.getPreferredSize())
+
+  panelUiScale.add(scaleSelector)
+  panelUiScale.add(JLabel("UI Scale for HiDPI, will take effect after restarting"))
+  panelUiScale.add(Box.createHorizontalGlue())
+
+  // panelUi signal
+  //
+  scaleSelector.addActionListener(_ =>
+    val scale= scaleSelector.getSelectedIndex() + 1
+    config.Manager.ui.scale= scale
+    configSignal.ui.scale pub scale
+  )
+
+  // panelUi loadConfig
+  scaleSelector.setSelectedIndex(config.Manager.ui.scale-1)
 
   // panelUpdate ui
 

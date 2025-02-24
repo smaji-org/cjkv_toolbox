@@ -22,7 +22,7 @@ object Manager {
   import XPathOps.*
 
   private case class CfgStartup(autostart: Boolean, minimized: Boolean)
-  private val defaultStartup= CfgStartup(true, true)
+  private val defaultStartup= CfgStartup(false, false)
 
   private case class CfgUpdate(interval: Int, toolbox: Boolean, modules: Boolean)
   private val defaultUpdate= CfgUpdate(345600, true, true)
@@ -33,6 +33,10 @@ object Manager {
     s"""<?xml version="1.0" encoding="UTF-8" ?>
        |<toolbox>
        |  <version>0.1.0</version>
+       |  <ui>
+       |    <lang></lang>
+       |    <scale>1</scale>
+       |  </ui>
        |  <repositories>
        |    <repository>
        |      <name>${defaultRepo.name}</name>
@@ -75,6 +79,7 @@ object Manager {
   private val elemToolbox= getOrCreateElem("toolbox", toolboxCfg)
 
   private val elemRepositories= getOrCreateElem("repositories", elemToolbox)
+  private val elemUi= getOrCreateElem("ui", elemToolbox)
   private val elemStartup= getOrCreateElem("startup", elemToolbox)
   private val elemUpdate= getOrCreateElem("update", elemToolbox)
   private val elemModules= getOrCreateElem("modules", elemToolbox)
@@ -163,6 +168,22 @@ object Manager {
       case modules: org.w3c.dom.Element=>
         toolboxCfg.getDocumentElement().replaceChild(elemModules, modules)
     if autoSync then sync()
+  }
+
+  object ui {
+    def lang=
+      getOrCreateElem("lang", elemUi).getTextContent().trim
+    def lang_=(lang: String)=
+      getOrCreateElem("lang", elemUi).setTextContent(lang)
+      if autoSync then sync()
+
+    def scale=
+      getOrCreateElem("scale", elemUi).getTextContent().trim match
+        case "" => 1
+        case scale => scale.toDouble.toInt
+    def scale_=(scale: Int)=
+      getOrCreateElem("scale", elemUi).setTextContent(scale.toString())
+      if autoSync then sync()
   }
 
   object startup {
