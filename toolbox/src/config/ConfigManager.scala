@@ -207,6 +207,15 @@ object Manager {
       getOrCreateElem("interval", elemUpdate).setTextContent(interval.toString())
       if autoSync then sync()
 
+    def next=
+      getOrCreateElem("next", elemUpdate).getTextContent().trim() match {
+        case "" => time.OffsetDateTime.now(zoneUTC)
+        case content => time.OffsetDateTime.parse(content)
+      }
+    def next_=(next: time.OffsetDateTime)=
+      getOrCreateElem("next", elemUpdate).setTextContent(next.toString())
+      if autoSync then sync()
+
     def toolbox=
       getOrCreateElem("toolbox", elemUpdate).getTextContent().toBoolean
     def toolbox_=(set: Boolean)=

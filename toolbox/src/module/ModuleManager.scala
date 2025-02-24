@@ -276,26 +276,36 @@ object Manager {
   val updateIndex: Runnable= () => {
     cjkvDownloader.downloadAndExtract("/index.xml.tgz", modulesDir)
     loadIndex()
+    val next= time.OffsetDateTime.now(zoneUTC).plusSeconds(config.Manager.update.interval)
+    config.Manager.update.next= next
     updateIndexTask= indexExecutor.schedule(updateIndex, config.Manager.update.interval, TimeUnit.SECONDS)
   }
 
 
   var updateIndexTask=
-    if Files.exists(modulesDir.resolve("index.xml")) then
-      loadIndex()
-      indexExecutor.schedule(updateIndex, config.Manager.update.interval, TimeUnit.SECONDS)
-    else
+    if ! Files.exists(modulesDir.resolve("index.xml")) then
       indexExecutor.submit(updateIndex)
+    else
+      val next= config.Manager.update.next
+      val now= time.OffsetDateTime.now(zoneUTC)
+      if (next compareTo now) <= 0 then
+        indexExecutor.submit(updateIndex)
+      else
+        loadIndex()
+        val duration= time.Duration.between(now, next)
+        indexExecutor.schedule(updateIndex, duration.getSeconds(), TimeUnit.SECONDS)
 
   def resetTask(interval: Int = config.Manager.update.interval)= {
     if (updateIndexTask.cancel(false)) {
-      indexExecutor.schedule(updateIndex, interval, TimeUnit.SECONDS)
+      updateIndexTask= indexExecutor.schedule(updateIndex, interval, TimeUnit.SECONDS)
+      val next= time.OffsetDateTime.now(zoneUTC).plusSeconds(interval)
+      config.Manager.update.next= next
     }
   }
 
   def updateIndexNow()= {
     if (updateIndexTask.cancel(false)) {
-      indexExecutor.schedule(updateIndex, 0, TimeUnit.SECONDS)
+      updateIndexTask= indexExecutor.submit(updateIndex)
     }
   }
 
