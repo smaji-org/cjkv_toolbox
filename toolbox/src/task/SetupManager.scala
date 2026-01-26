@@ -123,7 +123,7 @@ object Manager {
       val (os, archs)= release.platforms.head
 
       val r= Try {
-        println(s"install ${m.name}, $os, ${archs.head}")
+        println(s"downloading ${m.name}, $os, ${archs.head}")
         import scala.sys.process.*
         val downloader= CjkvDownloader()
         val target= s"/module/${m.name}/${release.version}/$os/${archs.head}/${m.name}.tgz"
@@ -143,6 +143,7 @@ object Manager {
           }
         }
         File(installerPath.toString).setExecutable(true)
+        println(s"begin installing ${m.name}, $os, ${archs.head}")
         val p= Process(
           Seq(
             startPath.toString, installerPath.toString)

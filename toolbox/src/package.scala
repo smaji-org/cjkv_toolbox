@@ -31,14 +31,18 @@ lazy val jarPath= {
     .getProtectionDomain().getCodeSource()
     .getLocation().toString()
 
-  val fileSchema= "file:/"
+  val fileSchema= hostOs match {
+    case "windows" => "file:/"
+    case _ => "file:"
+  }
   if url.startsWith(fileSchema) then
     Paths.get(url.drop(fileSchema.length))
   else
     Paths.get(url)
 }
 
-lazy val toolboxDir= jarPath.getParent()
+lazy val toolboxDir=
+  jarPath.getParent()
 
 lazy val userConfigDir= {
   hostOs match

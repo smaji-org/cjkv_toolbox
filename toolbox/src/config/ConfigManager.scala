@@ -179,7 +179,12 @@ object Manager {
 
     def scale=
       getOrCreateElem("scale", elemUi).getTextContent().trim match
-        case "" => 1
+        case "" =>
+          try {
+            System.getenv("GDK_SCALE").toDouble.toInt
+          } catch {
+            case _ => 1
+          }
         case scale => scale.toDouble.toInt
     def scale_=(scale: Int)=
       getOrCreateElem("scale", elemUi).setTextContent(scale.toString())

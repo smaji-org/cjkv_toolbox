@@ -316,7 +316,6 @@ object Manager {
           setup.Manager.installToolbox(toolbox)
         }
       }
-      ()
       case _ => setup.Manager.installToolbox(toolbox)
     }
   }

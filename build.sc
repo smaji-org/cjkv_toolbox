@@ -4,7 +4,7 @@ import mill._, scalalib._
 object toolbox extends ScalaModule {
   def publishVersion= "0.0.1"
 
-  def scalaVersion= "3.3.4"
+  def scalaVersion= "3.3.7"
   def scalacOptions= Seq(
     // "-Werror",
     "-release:8",
@@ -30,7 +30,7 @@ object toolbox extends ScalaModule {
 object upgrader extends ScalaModule {
   def publishVersion= "0.0.1"
 
-  def scalaVersion= "3.3.4"
+  def scalaVersion= "3.3.7"
   def scalacOptions= Seq(
     "-Werror",
     "-release:8",

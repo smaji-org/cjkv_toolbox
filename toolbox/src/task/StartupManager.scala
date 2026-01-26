@@ -57,11 +57,9 @@ object windows extends autostart {
   val cmd= Seq(autostartPath.toString, key)
 
   def enableAutostart()= {
-    println(cmd :+ run)
     Process(cmd :+ run).run()
   }
   def disenableAutostart()= {
-    println(cmd)
     Process(cmd).run()
   }
 }

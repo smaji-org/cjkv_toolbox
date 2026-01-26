@@ -18,7 +18,16 @@ object MainWindow {
   lazy val icon= loadImage("images/toolbox.png")
   lazy val trayIcon=
     val trayIcon= TrayIcon(icon.getImage(), "CJKV Toolbox")
-    trayIcon.setImageAutoSize(true)
+    if scale > 1 then
+      trayIcon.setImageAutoSize(false)
+      val traySize= trayIcon.getSize()
+      val img= icon.getImage()
+      val width= (traySize.width.toFloat * 13/10 / scale).toInt
+      val height= (traySize.height.toFloat * 13/10 / scale).toInt
+      val imgScaled= img.getScaledInstance(width, height, Image.SCALE_SMOOTH)
+      trayIcon.setImage(imgScaled)
+    else
+      trayIcon.setImageAutoSize(true)
     trayIcon
 
   lazy val frame= JFrame()
@@ -160,7 +169,6 @@ object MainWindow {
     popup.add(exitItem)
 
     trayIcon.setPopupMenu(popup)
-    trayIcon.setImageAutoSize(true)
     trayIcon.addActionListener(_ => frame.setVisible(!frame.isVisible()))
 
     try
