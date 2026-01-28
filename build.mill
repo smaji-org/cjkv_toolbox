@@ -53,33 +53,27 @@ object upgrader extends ScalaModule {
   */
 }
 
-trait GoMod extends Module {
-  def sources=  Task.Source(moduleDir)
-  def compile= Task {
-    os.call(("go", "build", "-o", Task.dest, "-C", sources().path, "."), stdout= os.Inherit)
-    PathRef(Task.dest)
-  }
-}
-
 trait GoCross extends Module {
-  def target= "target"
-  object build extends GoMod {
+  def cmd= Task {
+    s"cross_build ${moduleDir / "target.json"} ${moduleDir} ${Task.dest}"
   }
+  def sources = Task.Source { moduleDir }
+  def allSources = Task { os.walk(sources().path).map(PathRef(_)) }
   def compile= Task {
-    val buildPath= build.compile().path
-    // System.out.println("buildPath", buildPath)
-    val cross_build= (buildPath / "cross_build").toString()
-    os.call((cross_build, moduleDir / target, Task.dest), stdout=os.Inherit)
+    var dependOn= allSources()
+    val cross_build= "cross_build"
+    os.call((cross_build,
+      moduleDir / "target.json",
+      moduleDir ,
+      Task.dest), stdout=os.Inherit)
     PathRef(Task.dest)
   }
 }
 
 object native_aux extends Module {
   object start extends GoCross {
-    def target= "start"
   }
 
   object autostart extends GoCross {
-    def target= "autostart"
   }
 }

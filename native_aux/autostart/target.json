@@ -1,11 +1,7 @@
 {
-  "defaultOs": ["linux", "freebsd", "netbsd", "openbsd", "windows"],
+  "defaultOs": ["windows"],
   "defaultArch": ["386", "amd64", "arm", "arm64"],
 
   "additionalTarget": {
-    "linux": ["mipsle", "mips64le", "ppc64le", "riscv64", "loong64", "s390x"],
-    "darwin": ["amd64", "arm64"],
-    "solaris": ["amd64"],
-    "dragonfly": ["amd64"]
   }
 }
