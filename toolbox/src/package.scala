@@ -65,24 +65,46 @@ lazy val zoneUTC= {
 }
 
 
-def loadImage(path: String)= {
+def loadMultiResolutionImage(path: String)= {
+  import java.awt.image.BaseMultiResolutionImage
+  import javax.imageio.ImageIO
   import javax.swing.ImageIcon
   val classloader= Thread.currentThread().getContextClassLoader()
   val url= classloader.getResource(path)
-  ImageIcon(url)
+  BaseMultiResolutionImage(ImageIO.read(url))
+}
+
+import javax.imageio.ImageIO
+def loadImage(path: String)= {
+  val classloader= Thread.currentThread().getContextClassLoader()
+  val url= classloader.getResource(path)
+  ImageIO.read(url)
 }
 
 def loadImage(path: String, height: Int)= {
-  import javax.swing.ImageIcon
   val classloader= Thread.currentThread().getContextClassLoader()
   val url= classloader.getResource(path)
-  ImageIcon(url).getImage().getScaledInstance(height, height, java.awt.Image.SCALE_SMOOTH)
+  ImageIO.read(url).getScaledInstance(height, height, java.awt.Image.SCALE_SMOOTH)
 }
 
 def loadImage(path: String, width: Int, height: Int)= {
   import javax.swing.ImageIcon
   val classloader= Thread.currentThread().getContextClassLoader()
   val url= classloader.getResource(path)
-  ImageIcon(url).getImage().getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH)
+  ImageIO.read(url).getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH)
+}
+
+import java.awt
+import java.awt.*
+import javax.swing
+import javax.swing.*
+def highDpiImageIcon(image: Image, width: Int, height: Int)= {
+  new ImageIcon(image) {
+    override def getIconWidth()= width
+    override def getIconHeight()= height
+    override def paintIcon(c: Component, g: Graphics, x: Int, y: Int)= this.synchronized {
+      g.drawImage(image, x, y, width, height, null);
+    }
+  }
 }
 

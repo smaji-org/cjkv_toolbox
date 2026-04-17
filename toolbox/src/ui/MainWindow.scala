@@ -15,7 +15,7 @@ object MainWindow {
   val scale= config.Manager.ui.scale
   System.setProperty("sun.java2d.uiScale", scale.toString)
 
-  lazy val icon= loadImage("images/toolbox.png")
+  lazy val icon= ImageIcon(loadImage("images/toolbox.png"))
   lazy val trayIcon=
     val trayIcon= TrayIcon(icon.getImage(), "CJKV Toolbox")
     if scale > 1 then
@@ -121,10 +121,10 @@ object MainWindow {
     emHeight= menuHeight * 9 / 10
     padding= menuHeight / 3
 
-    val imageHide= ImageIcon(loadImage("images/hide.png", emHeight))
+    val imageHide= highDpiImageIcon(loadImage("images/hide.png"), emHeight, emHeight)
     itemHide.setIcon(imageHide)
 
-    val imageQuit= ImageIcon(loadImage("images/quit.png", emHeight))
+    val imageQuit= highDpiImageIcon(loadImage("images/quit.png"), emHeight, emHeight)
     itemQuit.setIcon(imageQuit)
 
     itemHide.addActionListener(_ => frame.setVisible(false))

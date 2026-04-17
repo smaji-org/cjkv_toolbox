@@ -27,7 +27,7 @@ case class Release(
   val major= version_desc.unapply(0).getOrElse("0").toInt
   val minor= version_desc.unapply(1).getOrElse("0").toInt
   val patch= version_desc.unapply(2).getOrElse("0").toInt
-  val suffix= version_desc.unapply(3)
+  val suffix= version_desc.unapply(3).getOrElse("0").toInt
 }
 
 case class Module(val name: String, val description: String, var releases: ArraySeq[Release]) {
