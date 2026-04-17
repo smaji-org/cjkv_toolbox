@@ -7,7 +7,7 @@ object toolbox extends ScalaModule {
   def scalaVersion= "3.3.7"
   def scalacOptions= Seq(
     "-Werror",
-    "-release:8",
+    "-release:11",
     "-Ysafe-init",
     "-explain",
     "-deprecation",
@@ -33,7 +33,7 @@ object upgrader extends ScalaModule {
   def scalaVersion= "3.3.7"
   def scalacOptions= Seq(
     "-Werror",
-    "-release:8",
+    "-release:11",
     "-Ysafe-init",
     "-explain",
     "-deprecation",
