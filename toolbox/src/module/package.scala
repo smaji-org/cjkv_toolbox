@@ -31,5 +31,7 @@ case class Release(
 }
 
 case class Module(val name: String, val description: String, var releases: ArraySeq[Release]) {
+  override def hashCode(): Int =
+    ((name + description).hashCode() + releases.length).hashCode()
 }
 
