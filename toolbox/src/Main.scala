@@ -1,9 +1,5 @@
 package org.smaji.cjkv_toolbox.toolbox
 
-import util.*
-import control.TailCalls.*
-
-
 object Main {
   def init()= {
     config.Manager.init()

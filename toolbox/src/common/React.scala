@@ -18,15 +18,17 @@ class Event[T]() {
     next
   }
 
-  def select(el: List[Event[T]])= {
-    val next= Event[T]()
-    el.foreach(e=>e.synchronized(e.subs add next.update))
-    next
-  }
-
   def update(value: T)= {
     last= Some(value)
     subs.foreach(_(value))
+  }
+}
+
+object Event {
+  def select[T](el: Event[T]*)= {
+    val next= Event[T]()
+    el.foreach(e=>e.synchronized(e.subs add next.update))
+    next
   }
 }
 
@@ -37,9 +39,9 @@ class Signal[T](var value: T) {
     val newValue= fn(value)
     val next= Signal[N](newValue)
     val glue= (x: T)=> {
-        val n= fn(x)
-        next.update(n)
-      }
+      val n= fn(x)
+      next.update(n)
+    }
     synchronized (subs add glue)
     next
   }

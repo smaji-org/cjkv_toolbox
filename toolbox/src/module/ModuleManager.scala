@@ -37,6 +37,9 @@ class ModuleSignal {
 }
 
 object Manager {
+  object Status {
+  }
+
   val defaultInterval= 60*60*24 // 1 day
   if (config.Manager.update.interval <= 0) {
     config.Manager.update.interval= defaultInterval
@@ -46,7 +49,7 @@ object Manager {
   var toolbox: Module= null
   var modules= ArraySeq[Module]()
 
-  val model= module.ModulesModel()
+  val model= ModulesModel()
   val signal= ModuleSignal()
 
   import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
@@ -54,10 +57,10 @@ object Manager {
   val indexExecutor = Executors.newSingleThreadScheduledExecutor()
   val updateExecutor = Executors.newSingleThreadScheduledExecutor()
 
-  model.signal.add { (node, selected)=>
-    if (node.installed.isDefined && !selected) {
+  model.eventEnalbeModule.add { (node, selected)=>
+    if (node.status.isInstalled() && !selected) {
       uninstall(node)
-    } else if (node.installed.isEmpty && selected) {
+    } else if (node.status.isUninstalled() && selected) {
       install(node)
     }
 
@@ -73,7 +76,7 @@ object Manager {
         case Failure(exception) =>
           println(exception)
         case Success(0) =>
-          node.installed= None
+          node.status= Uninstalled()
           model.fireTableDataChanged()
           config.Manager.modules=
             config.Manager.modules.removed(node.module.name)
@@ -104,7 +107,7 @@ object Manager {
           val version= release.version
           val datetime= OffsetDateTime.now(zoneUTC)
           val moduleInfo= InstalledModuleInfo(name, version, datetime)
-          node.installed= Some(release.version)
+          node.status= Installed(release.version)
           model.fireTableDataChanged()
           config.Manager.modules=
             config.Manager.modules.updated(name, moduleInfo)
@@ -260,11 +263,15 @@ object Manager {
 
     val moduleInstalled= config.Manager.modules
     val moduleNodes= modules.map { m =>
-      val installedVersion= moduleInstalled
-        .find((name, info)=>
-          m.name == name && m.releases.exists(_.version == info.version))
-        .map((name, info)=> info.version)
-      module.ModuleNode(m, installedVersion)
+      val status=
+        moduleInstalled
+          .find((name, info)=>
+            m.name == name && m.releases.exists(_.version == info.version))
+          .map((name, info)=> info.version)
+          match
+          case Some(version)=> Installed(version)
+          case None=> Uninstalled()
+      module.ModuleNode(m, status)
     }
     model.loadModuleInfo(moduleNodes)
 
@@ -324,8 +331,9 @@ object Manager {
     val task: Runnable= ()=> {
       // now in a new thread
       Try {
-        model.nodes.foreach { node=>
-          node.installed.foreach { current =>
+        model.modules.ordered.foreach { node=>
+          node.status match
+          case Installed(current)=>
             if (current != node.module.releases(0).version) {
               SwingUtilities.invokeAndWait { ()=>
                 signal.incTask()
@@ -334,7 +342,9 @@ object Manager {
                     case Success(0) =>
                       fInstall(node, false).thenAccept(_=> signal.decTask())
                     case _=> signal.decTask()
-                  } } } } } } } }
+                  } } } }
+          case _=> ()
+          } } }
     CompletableFuture.runAsync(task, updateExecutor)
   }
 

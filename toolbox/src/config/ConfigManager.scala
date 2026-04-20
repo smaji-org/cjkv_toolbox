@@ -2,15 +2,9 @@ package org.smaji.cjkv_toolbox.toolbox.config
 
 import org.smaji.cjkv_toolbox.toolbox.*
 
-import util.*
-import control.TailCalls.*
-
-import java.nio.file.{Path, Paths, Files}
+import java.nio.file.Files
 import java.time
-import java.io.{File, StringWriter, FileWriter}
-import java.util.stream.Collectors
 import java.io.StringReader
-import java.io.StringBufferInputStream
 
 object Manager {
   import collection.immutable.ArraySeq
@@ -128,12 +122,12 @@ object Manager {
     if autoSync then sync()
   }
   
-  def modules= {
+  def modules: collection.immutable.SeqMap[String, InstalledModuleInfo]= {
     import collection.immutable.SeqMap
     import DomOps.*
     try
       xpathEval.getNodeSet("modules/module", elemToolbox) match
-        case null=> SeqMap.empty[String, InstalledModuleInfo]
+        case null=> SeqMap.empty
         case nodeList: dom.NodeList =>
           SeqMap.from(
             nodeList.asScala.map { module =>
@@ -144,7 +138,7 @@ object Manager {
               name -> InstalledModuleInfo(name, version, datetime)
             })
     catch _ =>
-      SeqMap.empty[String, InstalledModuleInfo]
+      SeqMap.empty
   }
 
   def modules_=(modules: collection.immutable.SeqMap[String, InstalledModuleInfo])= {

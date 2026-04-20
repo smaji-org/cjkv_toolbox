@@ -31,5 +31,5 @@ def createPanelModules(emHeight: Int, padding: Int)= {
     moduleOutline.setEnabled(!busying)
   }
 
-  (panelModules, modulesModel.signal)
+  (panelModules, modulesModel.eventEnalbeModule)
 }
