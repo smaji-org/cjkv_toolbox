@@ -26,7 +26,7 @@ object Manager {
     val m= release.module
     val (os, archs)= release.platforms.head
 
-    val done= Pub[Try[Int]]
+    val done= react.Event[Try[Int]]
     val perform: Runnable= () => {
       val r= Try {
         println(s"install ${m.name}, $os, ${archs.head}")
@@ -60,7 +60,7 @@ object Manager {
         }
         r
       }
-      SwingUtilities.invokeLater(()=> done.pub(r))
+      SwingUtilities.invokeLater(()=> done.update(r))
     }
     executor.submit(perform)
     done
@@ -68,13 +68,13 @@ object Manager {
 
   def fInstall(release: module.Release)= {
     val f= CompletableFuture[Try[Int]]()
-    install(release).add(f.complete(_))
+    install(release).map(f.complete(_))
     f
   }
 
   def uninstall(node: module.ModuleNode)= {
     val m= node.module
-    val done= Pub[Try[Int]]
+    val done= react.Event[Try[Int]]
     val perform: Runnable= () => {
       val r= Try {
         import scala.sys.process.*
@@ -102,7 +102,7 @@ object Manager {
         }
         r
       }
-      SwingUtilities.invokeLater(()=> done.pub(r))
+      SwingUtilities.invokeLater(()=> done.update(r))
     }
     executor.submit(perform)
     done
@@ -110,7 +110,7 @@ object Manager {
 
   def fUninstall(node: module.ModuleNode)= {
     val f= CompletableFuture[Try[Int]]()
-    uninstall(node).add(f.complete(_))
+    uninstall(node).map(f.complete(_))
     f
   }
 

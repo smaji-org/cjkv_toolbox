@@ -35,6 +35,8 @@ object Event {
 class Signal[T](var value: T) {
   val subs= collection.mutable.Set[Function1[T, Unit]]()
 
+  def get()= value
+
   def map[N](fn: Function1[T, N])= {
     val newValue= fn(value)
     val next= Signal[N](newValue)

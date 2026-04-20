@@ -21,18 +21,18 @@ import java.util.concurrent.CompletableFuture
 import java.io.FileNotFoundException
 
 class ModuleSignal {
-  val updated= Pub[(Module, ArraySeq[Module])]()
-  val busying= Pub[Boolean]
+  val updated= react.Event[(Module, ArraySeq[Module])]()
+  val busying= react.Signal[Boolean](false)
 
   var counter= 0
   def incTask()= synchronized {
     counter+= 1
-    if counter == 1 then busying.pub(true)
+    if counter == 1 then busying.update(true)
   }
   def decTask()= synchronized {
     if counter > 0 then
       counter-= 1
-      if counter == 0 then busying.pub(false)
+      if counter == 0 then busying.update(false)
   }
 }
 
@@ -57,7 +57,8 @@ object Manager {
   val indexExecutor = Executors.newSingleThreadScheduledExecutor()
   val updateExecutor = Executors.newSingleThreadScheduledExecutor()
 
-  model.eventEnalbeModule.add { (node, selected)=>
+  val d= model.eventEnalbeModule.map { (node, selected)=>
+
     if (node.status.isInstalled() && !selected) {
       uninstall(node)
     } else if (node.status.isUninstalled() && selected) {
@@ -68,10 +69,10 @@ object Manager {
   }
 
   def uninstall(node: ModuleNode, oneshot: Boolean= true)= {
-    if oneshot then signal.busying.pub(true)
+    if oneshot then signal.busying.update(true)
     val unistallSignal= setup.Manager.uninstall(node)
-    unistallSignal.add { r =>
-      if oneshot then signal.busying.pub(false)
+    unistallSignal map { r =>
+      if oneshot then signal.busying.update(false)
       r match {
         case Failure(exception) =>
           println(exception)
@@ -89,16 +90,16 @@ object Manager {
   def fUninstall(node: ModuleNode, oneshot: Boolean= true)= {
     val f= CompletableFuture[Try[Int]]()
     val r= uninstall(node, oneshot)
-    r.add(f.complete(_))
+    r map(f.complete(_))
     f
   }
 
   def install(node: ModuleNode, oneshot: Boolean= true)= {
-    if oneshot then signal.busying.pub(true)
+    if oneshot then signal.busying.update(true)
     val release= node.module.releases.head
     val installSignal= setup.Manager.install(release)
-    installSignal.add { r =>
-      if oneshot then signal.busying.pub(false)
+    installSignal map { r =>
+      if oneshot then signal.busying.update(false)
       r match {
         case Failure(exception) =>
           println(exception)
@@ -120,7 +121,7 @@ object Manager {
   def fInstall(node: ModuleNode, oneshot: Boolean= true)= {
     val f= CompletableFuture[Try[Int]]()
     val r= install(node, oneshot)
-    r.add(f.complete(_))
+    r map(f.complete(_))
     f
   }
 
@@ -275,7 +276,7 @@ object Manager {
     }
     model.loadModuleInfo(moduleNodes)
 
-    signal.updated.pub(toolbox, modules)
+    signal.updated.update((toolbox, modules))
     if config.Manager.update.modules then updateModules()
     if config.Manager.update.toolbox then updateToolbox()
   }
@@ -317,13 +318,14 @@ object Manager {
   }
 
   def updateToolbox()= {
-    signal.busying.get() match {
-      case Some(true)=> signal.busying.add { busying=>
+    if (signal.busying.get()) {
+      signal.busying.map { busying=>
         if (!busying) {
           setup.Manager.installToolbox(toolbox)
         }
       }
-      case _ => setup.Manager.installToolbox(toolbox)
+    } else {
+      setup.Manager.installToolbox(toolbox)
     }
   }
 
@@ -351,6 +353,6 @@ object Manager {
   def init()= ()
 
   def public()=
-    signal.updated.pub(toolbox, modules)
+    signal.updated.update((toolbox, modules))
 }
 

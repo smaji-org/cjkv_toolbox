@@ -3,7 +3,7 @@ package org.smaji.cjkv_toolbox.toolbox.module
 import javax.swing.*
 
 import scala.jdk.CollectionConverters.*
-import org.smaji.cjkv_toolbox.toolbox.Pub
+import org.smaji.cjkv_toolbox.toolbox.react
 import javax.swing.table.AbstractTableModel
 import scala.collection.immutable.ArraySeq
 
@@ -58,7 +58,7 @@ class ModulesModel extends AbstractTableModel {
   type enable= Boolean
   case class Modules(nameMap: Map[String, ModuleNode], ordered: ArraySeq[ModuleNode], orderInfo: Map[ModuleNode, Int])
 
-  val eventEnalbeModule= Pub[(ModuleNode, enable)]()
+  val eventEnalbeModule= react.Event[(ModuleNode, enable)]()
   var modules= Modules(Map.empty, ArraySeq.empty, Map.empty)
   def loadModuleInfo(nodes: ArraySeq[ModuleNode])= {
     val ordered= nodes
@@ -133,7 +133,7 @@ class ModulesModel extends AbstractTableModel {
   }
   override def setValueAt(value: Object, row: Int, col: Int): Unit = {
     if (col == 2) {
-      eventEnalbeModule.pub(modules.ordered(row), value.asInstanceOf[Boolean])
+      eventEnalbeModule.update(modules.ordered(row), value.asInstanceOf[Boolean])
     }
   }
 }

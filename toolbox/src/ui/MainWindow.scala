@@ -81,23 +81,23 @@ object MainWindow {
   }
 
   def setupPanelConfig(signals: ConfigSignal)= {
-    signals.update.check.add { msg =>
+    signals.update.check map { msg =>
       module.Manager.updateIndexNow()
     }
 
-    signals.update.interval.add { interval =>
+    signals.update.interval map { interval =>
       module.Manager.resetTask(interval)
     }
 
-    signals.update.toolbox.add { _ =>
+    signals.update.toolbox map { _ =>
       module.Manager.updateToolbox()
     }
 
-    signals.update.modules.add { _ =>
+    signals.update.modules map { _ =>
       module.Manager.updateModules()
     }
 
-    signals.start.auto.add(startup.Manager.setAutostart(_))
+    signals.start.auto map(startup.Manager.setAutostart(_))
   }
 
   def setupMenubar()= {
