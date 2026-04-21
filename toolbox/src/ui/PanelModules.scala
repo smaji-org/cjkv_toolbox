@@ -27,9 +27,9 @@ def createPanelModules(emHeight: Int, padding: Int)= {
 
   panelModules.setViewportView(moduleOutline)
 
-  module.Manager.signal.busying map { busying=>
+  module.Manager.signal.signal_busying map { busying=>
     moduleOutline.setEnabled(!busying)
   }
 
-  (panelModules, modulesModel.eventEnalbeModule)
+  (panelModules, modulesModel.event_enalbeModule)
 }

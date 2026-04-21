@@ -6,21 +6,21 @@ import javax.swing.*
 
 class ConfigSignal {
   object ui {
-    val scale= react.Signal[Int](1)
+    val (scale, scale_update)= react.Signal.create[Int](1)
   }
 
   object update {
-    val autoToolbox= react.Signal[Boolean](false)
-    val autoModules= react.Signal[Boolean](false)
-    val toolbox= react.Signal[Unit](())
-    val modules= react.Signal[Unit](())
-    val interval= react.Signal[Int](60*60*8)
-    val check= react.Signal[Unit](())
+    val (autoToolbox, update_autoToolbox)= react.Signal.create[Boolean](false)
+    val (autoModules, update_autoModules)= react.Signal.create[Boolean](false)
+    val (toolbox, update_toolbox)= react.Signal.create[Unit](())
+    val (modules, update_modules)= react.Signal.create[Unit](())
+    val (interval, update_interval)= react.Signal.create[Int](60*60*8)
+    val (check, update_check)= react.Signal.create[Unit](())
   }
 
   object start {
-    val auto= react.Signal[Boolean](false)
-    val minimized= react.Signal[Boolean](false)
+    val (auto, update_auto)= react.Signal.create[Boolean](false)
+    val (minimized, update_minimized)= react.Signal.create[Boolean](false)
   }
 }
 
@@ -85,7 +85,7 @@ def createPanelConfig(emHeight: Int, padding: Int)= {
   scaleSelector.addActionListener(_ =>
     val scale= scaleSelector.getSelectedIndex() + 1
     config.Manager.ui.scale= scale
-    configSignal.ui.scale update scale
+    configSignal.ui.scale_update(scale)
   )
 
   // panelUi loadConfig
@@ -145,32 +145,32 @@ def createPanelConfig(emHeight: Int, padding: Int)= {
     val isSelected= checkUpdateToolbox.isSelected()
     btnUpdateToolbox.setVisible(!isSelected)
     config.Manager.update.toolbox= isSelected
-    configSignal.update.autoToolbox update isSelected
+    configSignal.update.update_autoToolbox(isSelected)
   )
 
   btnUpdateToolbox.addActionListener(_ =>
-    configSignal.update.toolbox update ()
+    configSignal.update.update_toolbox(())
   )
 
   checkUpdateModules.addActionListener(_ =>
     val isSelected= checkUpdateModules.isSelected()
     btnUpdateModules.setVisible(!isSelected)
     config.Manager.update.modules= isSelected
-    configSignal.update.autoModules update isSelected
+    configSignal.update.update_autoModules(isSelected)
   )
 
   btnUpdateModules.addActionListener(_ =>
-    configSignal.update.modules update ()
+    configSignal.update.update_modules(())
   )
 
   intervalTime.addActionListener(_ =>
     val interval= intervalTime.getSelectedInterval()
     config.Manager.update.interval= interval
-    configSignal.update.interval update interval
+    configSignal.update.update_interval(interval)
   )
 
   btnUpdateCheck.addActionListener(_ =>
-    configSignal.update.check update ()
+    configSignal.update.update_check(())
   )
 
   // panelStartup ui
@@ -196,13 +196,13 @@ def createPanelConfig(emHeight: Int, padding: Int)= {
   checkAutostart.addItemListener(_ =>
     val isSelected= checkAutostart.isSelected()
     config.Manager.startup.autostart= isSelected
-    configSignal.start.auto update isSelected
+    configSignal.start.update_auto(isSelected)
   )
 
   checkMinimized.addItemListener(_ =>
     val isSelected= checkMinimized.isSelected()
     config.Manager.startup.minimized= isSelected
-    configSignal.start.minimized update isSelected
+    configSignal.start.update_minimized(isSelected)
   )
 
   def postSetup()= {

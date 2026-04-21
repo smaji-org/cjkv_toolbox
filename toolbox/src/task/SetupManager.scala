@@ -26,7 +26,7 @@ object Manager {
     val m= release.module
     val (os, archs)= release.platforms.head
 
-    val done= react.Event[Try[Int]]
+    val (done, update_done)= react.Event.create[Try[Int]]()
     val perform: Runnable= () => {
       val r= Try {
         println(s"install ${m.name}, $os, ${archs.head}")
@@ -60,7 +60,7 @@ object Manager {
         }
         r
       }
-      SwingUtilities.invokeLater(()=> done.update(r))
+      SwingUtilities.invokeLater(()=> update_done(r))
     }
     executor.submit(perform)
     done
@@ -74,7 +74,7 @@ object Manager {
 
   def uninstall(node: module.ModuleNode)= {
     val m= node.module
-    val done= react.Event[Try[Int]]
+    val (done, update_done)= react.Event.create[Try[Int]]()
     val perform: Runnable= () => {
       val r= Try {
         import scala.sys.process.*
@@ -102,7 +102,7 @@ object Manager {
         }
         r
       }
-      SwingUtilities.invokeLater(()=> done.update(r))
+      SwingUtilities.invokeLater(()=> update_done(r))
     }
     executor.submit(perform)
     done

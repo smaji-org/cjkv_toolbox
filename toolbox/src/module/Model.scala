@@ -58,7 +58,7 @@ class ModulesModel extends AbstractTableModel {
   type enable= Boolean
   case class Modules(nameMap: Map[String, ModuleNode], ordered: ArraySeq[ModuleNode], orderInfo: Map[ModuleNode, Int])
 
-  val eventEnalbeModule= react.Event[(ModuleNode, enable)]()
+  val (event_enalbeModule, update_enableModule)= react.Event.create[(ModuleNode, enable)]()
   var modules= Modules(Map.empty, ArraySeq.empty, Map.empty)
   def loadModuleInfo(nodes: ArraySeq[ModuleNode])= {
     val ordered= nodes
@@ -133,7 +133,7 @@ class ModulesModel extends AbstractTableModel {
   }
   override def setValueAt(value: Object, row: Int, col: Int): Unit = {
     if (col == 2) {
-      eventEnalbeModule.update(modules.ordered(row), value.asInstanceOf[Boolean])
+      update_enableModule(modules.ordered(row), value.asInstanceOf[Boolean])
     }
   }
 }
