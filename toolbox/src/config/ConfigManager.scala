@@ -1,14 +1,11 @@
 package org.smaji.cjkv_toolbox.toolbox.config
 
-import org.smaji.cjkv_toolbox.toolbox.*
-
-import java.nio.file.Files
-import java.time
-import java.io.StringReader
-
 object Manager {
+  import org.smaji.cjkv_toolbox.toolbox.*
+  import java.nio.file.Files
+  import java.time
+  import java.io.StringReader
   import collection.immutable.ArraySeq
-  import java.net.{URL, URLEncoder, URLDecoder}
   import javax.xml.parsers as xmlParsers
   import javax.xml.transform as xmlTransform
   import org.w3c.dom
@@ -18,7 +15,8 @@ object Manager {
   private case class CfgStartup(autostart: Boolean, minimized: Boolean)
   private val defaultStartup= CfgStartup(false, false)
 
-  private case class CfgUpdate(interval: Int, toolbox: Boolean, modules: Boolean)
+  private type Second= Int
+  private case class CfgUpdate(interval: Second, toolbox: Boolean, modules: Boolean)
   private val defaultUpdate= CfgUpdate(345600, true, true)
 
   private val defaultRepo= RepositoryInfo("smaji", "https://cjkv.smaji.org/static/repo")
@@ -26,7 +24,7 @@ object Manager {
   private val defaultConfig=
     s"""<?xml version="1.0" encoding="UTF-8" ?>
        |<toolbox>
-       |  <version>0.1.0</version>
+       |  <version>${version}</version>
        |  <ui>
        |    <lang></lang>
        |    <scale>1</scale>
@@ -89,7 +87,7 @@ object Manager {
 
   def repositories= {
     import DomOps.*
-    try
+    try {
       xpathEval.getNodeSet("repositories/repository", elemToolbox) match
         case null=> ArraySeq(defaultRepo)
         case nodeList: dom.NodeList =>
@@ -98,8 +96,9 @@ object Manager {
             val url= xpathEval.getNode("url", repo).getTextContent()
             RepositoryInfo(name, url)
           }
-    catch _ =>
+    } catch _ => {
       ArraySeq(defaultRepo)
+    }
   }
 
   def repositories_=(repositories: ArraySeq[RepositoryInfo])= {
@@ -114,21 +113,22 @@ object Manager {
       elemRepository.appendChild(elemUrl)
       elemRepositories.appendChild(elemRepository)
     }
-    xpathEval.getNode("repositories", elemToolbox) match
+    xpathEval.getNode("repositories", elemToolbox) match {
       case null=>
         toolboxCfg.getDocumentElement().appendChild(elemRepositories)
       case repositories: org.w3c.dom.Element=>
         toolboxCfg.getDocumentElement().replaceChild(elemRepositories, repositories)
+    }
     if autoSync then sync()
   }
-  
+
   def modules: collection.immutable.SeqMap[String, InstalledModuleInfo]= {
     import collection.immutable.SeqMap
     import DomOps.*
-    try
-      xpathEval.getNodeSet("modules/module", elemToolbox) match
+    try {
+      xpathEval.getNodeSet("modules/module", elemToolbox) match {
         case null=> SeqMap.empty
-        case nodeList: dom.NodeList =>
+        case nodeList: dom.NodeList => {
           SeqMap.from(
             nodeList.asScala.map { module =>
               val name= xpathEval.getNode("name", module).getTextContent()
@@ -137,8 +137,11 @@ object Manager {
                 xpathEval.getNode("datetime", module).getTextContent())
               name -> InstalledModuleInfo(name, version, datetime)
             })
-    catch _ =>
+        }
+      }
+    } catch _ => {
       SeqMap.empty
+    }
   }
 
   def modules_=(modules: collection.immutable.SeqMap[String, InstalledModuleInfo])= {
@@ -156,13 +159,25 @@ object Manager {
       elemModule.appendChild(elemDatetime)
       elemModules.appendChild(elemModule)
     }
-    xpathEval.getNode("modules", elemToolbox) match
+    xpathEval.getNode("modules", elemToolbox) match {
       case null=>
         toolboxCfg.getDocumentElement().appendChild(elemModules)
       case modules: org.w3c.dom.Element=>
         toolboxCfg.getDocumentElement().replaceChild(elemModules, modules)
+    }
     if autoSync then sync()
   }
+
+  def getScaleFromEnv(): Int=
+    try {
+      System.getenv("GDK_SCALE").toFloat.round
+    } catch _=> {
+      try {
+        System.getenv("QT_AUTO_SCREEN_SCALE_FACTOR").split(";")(0).split("=")(1).toFloat.round
+      } catch _ => {
+        1
+      }
+    }
 
   object ui {
     def lang=
@@ -171,15 +186,10 @@ object Manager {
       getOrCreateElem("lang", elemUi).setTextContent(lang)
       if autoSync then sync()
 
-    def scale=
+    def scale: Int=
       getOrCreateElem("scale", elemUi).getTextContent().trim match
-        case "" =>
-          try {
-            System.getenv("GDK_SCALE").toDouble.toInt
-          } catch {
-            case _ => 1
-          }
-        case scale => scale.toDouble.toInt
+        case "" => getScaleFromEnv()
+        case scale => scale.toFloat.round
     def scale_=(scale: Int)=
       getOrCreateElem("scale", elemUi).setTextContent(scale.toString())
       if autoSync then sync()
@@ -202,15 +212,14 @@ object Manager {
   object update {
     def interval=
       getOrCreateElem("interval", elemUpdate).getTextContent().toInt
-    def interval_=(interval: Int)=
+    def interval_=(interval: Second)=
       getOrCreateElem("interval", elemUpdate).setTextContent(interval.toString())
       if autoSync then sync()
 
     def next=
-      getOrCreateElem("next", elemUpdate).getTextContent().trim() match {
+      getOrCreateElem("next", elemUpdate).getTextContent().trim() match
         case "" => time.OffsetDateTime.now(zoneUTC)
         case content => time.OffsetDateTime.parse(content)
-      }
     def next_=(next: time.OffsetDateTime)=
       getOrCreateElem("next", elemUpdate).setTextContent(next.toString())
       if autoSync then sync()

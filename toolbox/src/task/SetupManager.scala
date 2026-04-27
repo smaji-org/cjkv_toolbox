@@ -2,17 +2,16 @@ package org.smaji.cjkv_toolbox.toolbox.setup
 
 import org.smaji.cjkv_toolbox.toolbox.*
 
-import javax.swing.SwingUtilities
 import scala.util.*
 import java.io.FileNotFoundException
 import java.util.concurrent.CompletableFuture
 
 object Manager {
-  import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
+  import java.util.concurrent.Executors
   import java.nio.file.{Path, Paths, Files}
   import java.io.File
-  // parallel tasking is not allowed
-  val executor = Executors.newSingleThreadScheduledExecutor()
+
+  val executor = Executors.newCachedThreadPool()
 
   val startPath= toolboxDir.resolve("cjkv_toolbox_start")
 
@@ -20,7 +19,7 @@ object Manager {
     Seq(
       "--module-dir", modulesDir.resolve(name).toString,
       "--toolbox-dir", toolboxDir.toString,
-      "config-dir", configDir.toString)
+      "--config-dir", configDir.toString)
 
   def install(release: module.Release)= {
     val m= release.module
@@ -60,7 +59,7 @@ object Manager {
         }
         r
       }
-      SwingUtilities.invokeLater(()=> update_done(r))
+      update_done(r)
     }
     executor.submit(perform)
     done
@@ -68,12 +67,11 @@ object Manager {
 
   def fInstall(release: module.Release)= {
     val f= CompletableFuture[Try[Int]]()
-    install(release).map(f.complete(_))
+    install(release).oneshot(f.complete(_))
     f
   }
 
-  def uninstall(node: module.ModuleNode)= {
-    val m= node.module
+  def uninstall(m: module.Module)= {
     val (done, update_done)= react.Event.create[Try[Int]]()
     val perform: Runnable= () => {
       val r= Try {
@@ -102,20 +100,19 @@ object Manager {
         }
         r
       }
-      SwingUtilities.invokeLater(()=> update_done(r))
+      update_done(r)
     }
     executor.submit(perform)
     done
   }
 
-  def fUninstall(node: module.ModuleNode)= {
+  def fUninstall(m: module.Module)= {
     val f= CompletableFuture[Try[Int]]()
-    uninstall(node).map(f.complete(_))
+    uninstall(m).oneshot(f.complete(_))
     f
   }
 
-  def installToolbox(toolbox: module.Module)= {
-    val release= toolbox.releases.head
+  def installToolbox(release: module.Release)= {
     println(s"try to install toolbox ${release.version}")
     if (version != release.version) {
 
@@ -145,8 +142,7 @@ object Manager {
         File(installerPath.toString).setExecutable(true)
         println(s"begin installing ${m.name}, $os, ${archs.head}")
         val p= Process(
-          Seq(
-            startPath.toString, installerPath.toString)
+          Seq(startPath.toString, installerPath.toString)
           ++ createCommandOpts(m.name)
           ).run()
         System.exit(0)

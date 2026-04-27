@@ -3,6 +3,7 @@ package org.smaji.cjkv_toolbox.toolbox
 import java.nio.file.{Path, Paths, Files}
 
 val debug= true
+var swingInitialized= false
 
 val version= "0.1.0"
 
@@ -44,12 +45,11 @@ lazy val jarPath= {
 lazy val toolboxDir=
   jarPath.getParent()
 
-lazy val userConfigDir= {
+lazy val userConfigDir=
   hostOs match
     case "windows" => Paths.get(System.getenv("AppData"))
     case _ => Option(System.getenv("XDG_CONFIG_HOME")).map(Paths.get(_))
       .getOrElse(Paths.get(System.getProperty("user.home"), ".config"))
-}
 
 lazy val configDir= {
   val skel= Seq("smaji", "cjkv_toolbox")

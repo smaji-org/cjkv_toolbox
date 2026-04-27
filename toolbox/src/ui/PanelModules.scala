@@ -10,9 +10,6 @@ import javax.swing.*
 import java.time.OffsetDateTime
 
 def createPanelModules(emHeight: Int, padding: Int)= {
-  import border.*
-  import ContainerOps.*
-
   val panelModules= JScrollPane()
 
   val paddingSet= awt.Insets(padding, padding, padding, padding)
@@ -27,9 +24,9 @@ def createPanelModules(emHeight: Int, padding: Int)= {
 
   panelModules.setViewportView(moduleOutline)
 
-  module.Manager.signal.signal_busying map { busying=>
+  module.Manager.busying map { busying=>
     moduleOutline.setEnabled(!busying)
   }
 
-  (panelModules, modulesModel.event_enalbeModule)
+  (panelModules, modulesModel.requestEnableModule)
 }

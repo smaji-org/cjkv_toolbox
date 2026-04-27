@@ -36,6 +36,7 @@ object MainWindow {
   lazy val paddingSet= awt.Insets(padding, padding, padding, padding)
 
   def start()= {
+    swingInitialized= true
     try
       UIManager.setLookAndFeel(NimbusLookAndFeel());
     catch
@@ -59,7 +60,6 @@ object MainWindow {
 
     val (panelModules, moduleSignal)= createPanelModules(emHeight, padding)
     val (panelConfig, configSignal, panelConfigPostSetup)= createPanelConfig(emHeight, padding)
-    module.Manager.public()
 
     tabbedPane.addTab("Config ", iconConfig, panelConfig)
     content.add(tabbedPane)
@@ -80,8 +80,9 @@ object MainWindow {
     }
   }
 
-  def setupPanelConfig(signals: ConfigSignal)= {
+  def setupPanelConfig(signals: ConfigEvent)= {
     signals.update.check map { msg =>
+      println("signals update check")
       module.Manager.updateIndexNow()
     }
 
@@ -173,7 +174,7 @@ object MainWindow {
 
     try
       tray.add(trayIcon)
-    catch 
+    catch
       case e: AWTException =>
         System.err.println("TrayIcon could not be added.")
   }
