@@ -2,7 +2,7 @@ package build
 import mill._, scalalib._
 
 object toolbox extends ScalaModule {
-  def publishVersion= "0.0.1"
+  def publishVersion= "0.1.0"
 
   def scalaVersion= "3.3.7"
   def scalacOptions= Seq(
@@ -27,8 +27,8 @@ object toolbox extends ScalaModule {
   */
 }
 
-object upgrader extends ScalaModule {
-  def publishVersion= "0.0.1"
+object installer extends ScalaModule {
+  def publishVersion= "0.1.0"
 
   def scalaVersion= "3.3.7"
   def scalacOptions= Seq(
@@ -43,7 +43,6 @@ object upgrader extends ScalaModule {
   def mvnDeps = Seq(
     mvn"com.lihaoyi::scalatags:0.13.1",
     mvn"com.lihaoyi::mainargs:0.7.8",
-    mvn"org.apache.commons:commons-compress:1.27.1",
   )
   /*
   object test extends ScalaTests {

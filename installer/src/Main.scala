@@ -1,0 +1,44 @@
+package org.smaji.cjkv_toolbox.upgrader
+
+val fileList= Seq(
+  "toolbox.jar",
+  )
+
+object Main:
+  import util.*
+  import java.nio.file.{Files, Paths, Path, StandardCopyOption}
+
+  def startToolbox(start: Path, dir: Path)=
+    import scala.sys.process.*
+    val p= Process(
+      Seq(start.toString(), dir.resolve("toolbox.jar").toString()),
+      dir.toFile()
+      ).run()
+
+  def makeCopy(srcRoot: Path, dstRoot: Path)(src: Path, dst: Path)=
+    Files.copy(srcRoot.resolve(src), dstRoot.resolve(dst), StandardCopyOption.REPLACE_EXISTING)
+
+  @mainargs.main
+  def install(
+    @mainargs.arg(short= 'm', doc = "")
+    moduleDir: String= ".",
+    @mainargs.arg(short= 't', doc = "")
+    toolboxDir: String,
+    @mainargs.arg(short= 'c', doc = "")
+    configDir: String,
+    @mainargs.arg(short= 'w', doc = "")
+    wait: Int,
+    ) =
+    val moduleDirPath= Paths get moduleDir
+    val toolboxDirPath= Paths get toolboxDir
+    val configDirPath= Paths get configDir
+    val startPath= toolboxDirPath.resolve("cjkv_toolbox_start")
+    val copy= makeCopy(moduleDirPath, toolboxDirPath)
+    def copyFile(name: String)= copy(Path.of(name), Path.of(name))
+    Thread.sleep(1000 * wait)
+    fileList.foreach(copyFile)
+    startToolbox(startPath, toolboxDirPath)
+
+  def main(args: Array[String]): Unit=
+    mainargs.ParserForMethods(this).runOrExit(args.toIndexedSeq)
+
