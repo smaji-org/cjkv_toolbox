@@ -49,9 +49,9 @@ object Manager {
         }
         File(installerPath.toString).setExecutable(true)
         val p= Process(
-          Seq(
-            startPath.toString, installerPath.toString)
-          ++ createCommandOpts(m.name)
+          Seq(startPath.toString, installerPath.toString)
+            ++ createCommandOpts(m.name),
+          moduleDir.toFile()
           ).run()
         val r= p.exitValue()
         if (r != 0) {
@@ -90,9 +90,9 @@ object Manager {
         }
         File(uninstallerPath.toString).setExecutable(true)
         val p= Process(
-          Seq(
-            startPath.toString, uninstallerPath.toString)
-          ++ createCommandOpts(m.name)
+          Seq(startPath.toString, uninstallerPath.toString)
+            ++ createCommandOpts(m.name),
+          moduleDir.toFile()
           ).run()
         val r= p.exitValue()
         if (r == 0) {
@@ -143,7 +143,8 @@ object Manager {
         println(s"begin installing ${m.name}, $os, ${archs.head}")
         val p= Process(
           Seq(startPath.toString, installerPath.toString)
-          ++ createCommandOpts(m.name)
+            ++ createCommandOpts(m.name),
+          moduleDir.toFile()
           ).run()
         System.exit(0)
       }
