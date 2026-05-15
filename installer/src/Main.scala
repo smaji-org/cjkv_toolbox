@@ -16,7 +16,10 @@ object Main:
       ).run()
 
   def makeCopy(srcRoot: Path, dstRoot: Path)(src: Path, dst: Path)=
-    Files.copy(srcRoot.resolve(src), dstRoot.resolve(dst), StandardCopyOption.REPLACE_EXISTING)
+    Files.copy(
+      srcRoot.resolve(src),
+      dstRoot.resolve(dst),
+      StandardCopyOption.REPLACE_EXISTING)
 
   @mainargs.main
   def install(
@@ -27,17 +30,22 @@ object Main:
     @mainargs.arg(short= 'c', doc = "")
     configDir: String,
     @mainargs.arg(short= 'w', doc = "")
-    wait: Int,
+    wait: Int= 1,
+    @mainargs.arg(short= 's', doc = "")
+    startPath: Option[String],
     ) =
     val moduleDirPath= Paths get moduleDir
     val toolboxDirPath= Paths get toolboxDir
     val configDirPath= Paths get configDir
-    val startPath= toolboxDirPath.resolve("cjkv_toolbox_start")
+    val startPathResolved=
+      startPath match
+        case Some(path)=> Path.of(path)
+        case None=> toolboxDirPath.resolve("cjkv_toolbox_start")
     val copy= makeCopy(moduleDirPath, toolboxDirPath)
     def copyFile(name: String)= copy(Path.of(name), Path.of(name))
     Thread.sleep(1000 * wait)
     fileList.foreach(copyFile)
-    startToolbox(startPath, toolboxDirPath)
+    startToolbox(startPathResolved, toolboxDirPath)
 
   def main(args: Array[String]): Unit=
     mainargs.ParserForMethods(this).runOrExit(args.toIndexedSeq)

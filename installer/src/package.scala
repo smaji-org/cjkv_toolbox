@@ -22,6 +22,3 @@ lazy val jarPath=
   else
     Paths.get(url)
 
-lazy val toolboxDir=
-  jarPath.getParent()
-
