@@ -113,14 +113,14 @@ object Manager {
   }
 
   def installToolbox(release: module.Release)= {
-    println(s"try to install toolbox ${release.version}")
+    if debug then println(s"try to install toolbox ${release.version}")
     if (version != release.version) {
 
       val m= release.module
       val (os, archs)= release.platforms.head
 
       val r= Try {
-        println(s"downloading ${m.name}, $os, ${archs.head}")
+        if debug then println(s"downloading ${m.name}, $os, ${archs.head}")
         import scala.sys.process.*
         val downloader= CjkvDownloader()
         val target= s"/module/${m.name}/${release.version}/$os/${archs.head}/${m.name}.tgz"
@@ -128,6 +128,7 @@ object Manager {
           case Failure(exception) => throw(exception)
           case Success(value) => ()
         val moduleDir= modulesDir.resolve(m.name)
+        if debug then println(s"moduleDir is $moduleDir")
         val installerPath= {
           val exePath= moduleDir.resolve("installer.exe")
           val jarPath= moduleDir.resolve("installer.jar")
@@ -139,15 +140,16 @@ object Manager {
             throw FileNotFoundException(exePath.toString)
           }
         }
+        if debug then println(s"installerPath is $installerPath")
         File(installerPath.toString).setExecutable(true)
-        println(s"begin installing ${m.name}, $os, ${archs.head}")
-        val p= Process(
-          Seq(startPath.toString, installerPath.toString)
-            ++ createCommandOpts(m.name),
-          moduleDir.toFile()
-          ).run()
+        if debug then println(s"begin installing ${m.name}, $os, ${archs.head}")
+        val cmd= Seq(startPath.toString, installerPath.toString) ++ createCommandOpts(m.name)
+        if debug then println(s"$cmd")
+        val p= Process(cmd, moduleDir.toFile()).run()
         System.exit(0)
       }
+    } else {
+      if debug then println(s"toolbox was already updated to ${release.version}")
     }
   }
 }

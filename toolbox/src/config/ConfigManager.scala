@@ -1,6 +1,8 @@
 package org.smaji.cjkv_toolbox.toolbox.config
 
-object Manager {
+val Manager= v_0_1
+
+object v_0_1 {
   import org.smaji.cjkv_toolbox.toolbox.*
   import java.nio.file.Files
   import java.time
@@ -24,7 +26,7 @@ object Manager {
   private val defaultConfig=
     s"""<?xml version="1.0" encoding="UTF-8" ?>
        |<toolbox>
-       |  <version>${version}</version>
+       |  <version>0.1</version>
        |  <ui>
        |    <lang></lang>
        |    <scale>1</scale>
@@ -84,6 +86,12 @@ object Manager {
     Files.createDirectories(configDir)
     sync()
   }
+
+  def version=
+    getOrCreateElem("version", elemToolbox).getTextContent().trim
+  def version_=(version: String)=
+    getOrCreateElem("version", elemToolbox).setTextContent(version)
+    if autoSync then sync()
 
   def repositories= {
     import DomOps.*

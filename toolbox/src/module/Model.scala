@@ -61,8 +61,8 @@ class Model extends AbstractTableModel {
     case Latest       extends Column
 
   type Enable= Boolean
-  case class Node private (val module: Module) {
-    private val (signal, update_status)= react.Signal.create[Status](Uninstalled())
+  case class Node private (val module: Module, status_ :Status) {
+    private val (signal, update_status)= react.Signal.create[Status](status_)
     val statusSignal= signal
     def status= signal.value
     def status_=(s: Status)= {
@@ -80,9 +80,8 @@ class Model extends AbstractTableModel {
     override def hashCode(): Int = module.hashCode()
   }
   object Node {
-    def apply(module: Module, status: Status)= {
-      val node= new Node(module)
-      node.status= status
+    def apply(module: Module, status: Status= Uninstalled())= {
+      val node= new Node(module, status)
       node
     }
   }

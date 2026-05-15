@@ -63,7 +63,7 @@ object Manager {
                 config.Manager.modules.removed(node.module.name)
             case Success(_) =>
               node.status= model.Broken()
-              println("uninstall failed")
+              if debug then println("uninstall failed")
             case Failure(exception) =>
               node.status= model.Broken()
               println(exception)
@@ -96,7 +96,7 @@ object Manager {
                 config.Manager.modules.updated(name, moduleInfo)
             case Success(_) =>
               node.status= model.Broken()
-              println("install failed")
+              if debug then println("install failed")
             case Failure(exception) =>
               node.status= model.Uninstalled()
               println(exception)
@@ -110,6 +110,7 @@ object Manager {
   }
 
   def loadIndex()= {
+    if debug then println("loadIndex")
     import collection.immutable.ArraySeq
     import java.net.{URL, URLEncoder, URLDecoder}
     import javax.xml.parsers as xmlParsers
@@ -290,7 +291,8 @@ object Manager {
     }
 
   def resetTask(interval: Int = config.Manager.update.interval)= {
-    if (updateIndexTask.cancel(false)) {
+    updateIndexTask.cancel(true)
+    if (updateIndexTask.isCancelled() || updateIndexTask.isDone()) {
       updateIndexTask= indexExecutor.schedule(updateIndex, interval, TimeUnit.SECONDS)
       val next= time.OffsetDateTime.now(zoneUTC).plusSeconds(interval)
       config.Manager.update.next= next
@@ -298,7 +300,8 @@ object Manager {
   }
 
   def updateIndexNow()= {
-    if (updateIndexTask.cancel(false)) {
+    updateIndexTask.cancel(true)
+    if (updateIndexTask.isCancelled() || updateIndexTask.isDone()) {
       updateIndexTask= indexExecutor.submit(updateIndex)
     }
   }
@@ -314,7 +317,6 @@ object Manager {
       ()
     } else {
       setup.Manager.installToolbox(latest)
-
     }
   }
 
