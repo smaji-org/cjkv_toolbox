@@ -1,4 +1,4 @@
-package org.smaji.cjkv_toolbox.toolbox
+package org.smaji.cjkv_toolbox.toolbox.ui
 
 import util.*
 import scala.jdk.CollectionConverters.*
@@ -10,6 +10,8 @@ import javax.swing.*
 import java.time.OffsetDateTime
 
 def createPanelModules(emHeight: Int, padding: Int)= {
+  import org.smaji.cjkv_toolbox.toolbox.module
+
   val panelModules= JScrollPane()
 
   val paddingSet= awt.Insets(padding, padding, padding, padding)

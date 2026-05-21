@@ -1,4 +1,4 @@
-package org.smaji.cjkv_toolbox.toolbox
+package org.smaji.cjkv_toolbox.toolbox.ui
 
 import util.*
 import scala.collection.*

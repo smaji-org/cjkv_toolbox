@@ -1,4 +1,4 @@
-package org.smaji.cjkv_toolbox.toolbox
+package org.smaji.cjkv_toolbox.toolbox.ui
 
 import java.awt
 import java.awt.*
@@ -10,12 +10,16 @@ import javax.swing.plaf.nimbus.NimbusLookAndFeel
 import java.io.File
 
 object MainWindow {
+  import org.smaji.cjkv_toolbox.toolbox.*
   import ContainerOps.*
 
   val scale= config.Manager.ui.scale
   System.setProperty("sun.java2d.uiScale", scale.toString)
 
-  lazy val icon= ImageIcon(loadImage("images/toolbox.png"))
+  // NOTE! These lazy values are NOT setup before setupMenubar is called
+  lazy val frame= JFrame()
+  lazy val paddingSet= awt.Insets(padding, padding, padding, padding)
+
   lazy val trayIcon=
     val trayIcon= TrayIcon(icon.getImage(), "CJKV Toolbox")
     if scale > 1 then
@@ -29,11 +33,7 @@ object MainWindow {
     else
       trayIcon.setImageAutoSize(true)
     trayIcon
-
-  lazy val frame= JFrame()
-  var emHeight= 0
-  var padding= 0
-  lazy val paddingSet= awt.Insets(padding, padding, padding, padding)
+  // end NOTE
 
   def start()= {
     swingInitialized= true
@@ -43,11 +43,12 @@ object MainWindow {
       case ex: UnsupportedLookAndFeelException=>
         System.err.println("Failed to initialize LaF");
 
-    frame.setIconImage(icon.getImage())
-
     setupMenubar()
     // after menuBar is setup, emHeight and padding are also set up
 
+    frame.setIconImage(icon.getImage())
+    frame.setTitle("CJKV Toolbox")
+    frame.setLocationByPlatform(true)
     setupTray()
 
     val content= frame.getContentPane()
@@ -73,6 +74,18 @@ object MainWindow {
 
     setupPanelConfig(configSignal)
     panelConfigPostSetup()
+
+    val maskPane= new JPanel {
+      def p(g: Graphics)=
+        val grayMask = Color(128, 128, 128, 128)
+        g.setColor(grayMask)
+        g.fillRect(0, 0, getWidth(), getHeight())
+        println(s"${getWidth()}, ${getHeight()}")
+
+      override def paintComponent(g: Graphics)= p(g)
+    }
+    frame.setGlassPane(maskPane)
+    maskPane.setOpaque(false)
 
     if (config.Manager.startup.minimized) {
     } else {
@@ -130,6 +143,16 @@ object MainWindow {
 
     itemHide.addActionListener(_ => frame.setVisible(false))
     itemQuit.addActionListener(_ => quit())
+
+    val aboutDialog= About.create(frame)
+    aboutDialog.addComponentListener:
+      import java.awt.event.*
+      new ComponentAdapter:
+        override def componentShown (e: ComponentEvent)=
+          frame.getGlassPane().setVisible(true)
+        override def componentHidden (e: ComponentEvent)=
+          frame.getGlassPane().setVisible(false)
+    itemAbout.addActionListener(_ => aboutDialog.setVisible(true))
   }
 
   def quit()= {
@@ -146,28 +169,11 @@ object MainWindow {
     val tray = SystemTray.getSystemTray()
 
     // Create a pop-up menu components
-    val aboutItem = MenuItem("About")
-    val cb1 = CheckboxMenuItem("Set auto size")
-    val cb2 = CheckboxMenuItem("Set tooltip")
-    val displayMenu = Menu("Display")
-    val errorItem = MenuItem("Error")
-    val warningItem = MenuItem("Warning")
-    val infoItem = MenuItem("Info")
-    val noneItem = MenuItem("None")
-    val exitItem = MenuItem("Exit")
+    val itemQuit = MenuItem("Exit")
+    itemQuit.addActionListener(_ => quit())
 
     //Add components to pop-up menu
-    popup.add(aboutItem)
-    popup.addSeparator()
-    popup.add(cb1)
-    popup.add(cb2)
-    popup.addSeparator()
-    popup.add(displayMenu)
-    displayMenu.add(errorItem)
-    displayMenu.add(warningItem)
-    displayMenu.add(infoItem)
-    displayMenu.add(noneItem)
-    popup.add(exitItem)
+    popup.add(itemQuit)
 
     trayIcon.setPopupMenu(popup)
     trayIcon.addActionListener(_ => frame.setVisible(!frame.isVisible()))

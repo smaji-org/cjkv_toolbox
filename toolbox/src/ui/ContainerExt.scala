@@ -1,4 +1,4 @@
-package org.smaji.cjkv_toolbox.toolbox
+package org.smaji.cjkv_toolbox.toolbox.ui
 
 import java.awt.Container
 import javax.swing.BoxLayout

@@ -1,10 +1,11 @@
-package org.smaji.cjkv_toolbox.toolbox
+package org.smaji.cjkv_toolbox.toolbox.ui
 
 import java.awt
 import java.awt.*
 import javax.swing.*
 
 class ConfigEvent {
+  import org.smaji.cjkv_toolbox.toolbox.react
   object ui {
     val (scale, scale_update)= react.Signal.create[Int](1)
   }
@@ -25,6 +26,7 @@ class ConfigEvent {
 }
 
 def createPanelConfig(emHeight: Int, padding: Int)= {
+  import org.smaji.cjkv_toolbox.toolbox.config
   import border.*
   import ContainerOps.*
 

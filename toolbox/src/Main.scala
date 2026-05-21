@@ -8,6 +8,6 @@ object Main {
 
   def main(args: Array[String]): Unit= {
     init()
-    MainWindow.main()
+    ui.MainWindow.main()
   }
 }

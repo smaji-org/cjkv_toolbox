@@ -268,8 +268,9 @@ object Manager {
   }
 
   val updateIndex: Runnable= () => {
-    cjkvDownloader.downloadAndExtract("/index.xml.tgz", modulesDir)
-    loadIndex()
+    cjkvDownloader.downloadAndExtract("/index.xml.tgz", modulesDir) match
+      case Success(())=> loadIndex()
+      case Failure(e)=> ()
     val next= time.OffsetDateTime.now(zoneUTC).plusSeconds(config.Manager.update.interval)
     config.Manager.update.next= next
     updateIndexTask= indexExecutor.schedule(updateIndex, config.Manager.update.interval, TimeUnit.SECONDS)
