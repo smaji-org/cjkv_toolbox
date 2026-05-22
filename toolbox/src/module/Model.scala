@@ -28,10 +28,10 @@ class Model extends AbstractTableModel {
     override def toString(): String =
       this match {
         case Uninstalled()=> ""
-        case Installed(version)=> version
-        case Uninstalling(version)=> s"${version}(uninstalling)"
-        case Installing(version)=> s"${version}(installing)"
-        case Broken()=> "broken"
+        case Installed(release)=> release.version
+        case Uninstalling(release)=> s"${release.version}(uninstalling)"
+        case Installing(release)=> s"${release.version}(installing)"
+        case Broken(release)=> s"${release.version}(broken)"
       }
 
     def isInstalled= isInstanceOf[Installed]
@@ -48,15 +48,14 @@ class Model extends AbstractTableModel {
       }
   }
   case class Uninstalled() extends Status
-  case class Installed(version: String) extends Status
-  case class Uninstalling(version: String) extends Status
-  case class Installing(version: String) extends Status
-  case class Broken() extends Status
+  case class Installed(version: Release) extends Status
+  case class Uninstalling(version: Release) extends Status
+  case class Installing(version: Release) extends Status
+  case class Broken(version: Release) extends Status
 
   enum Column:
     case Name         extends Column
     case Description  extends Column
-    case Enable       extends Column
     case Status       extends Column
     case Latest       extends Column
 
@@ -85,7 +84,6 @@ class Model extends AbstractTableModel {
       node
     }
   }
-  val (requestEnableModule, request)= react.Event.create[(Node, Enable)]()
 
   case class Modules(nameMap: Map[String, Node], ordered: ArraySeq[Node], orderInfo: Map[Node, Int])
   var modules= Modules(Map.empty, ArraySeq.empty, Map.empty)
@@ -140,7 +138,6 @@ class Model extends AbstractTableModel {
     Column.fromOrdinal(col) match {
       case Name       => classOf[String]
       case Description=> classOf[String]
-      case Enable     => classOf[Boolean]
       case Status     => classOf[String]
       case Latest     => classOf[String]
     }
@@ -154,7 +151,6 @@ class Model extends AbstractTableModel {
       Column.fromOrdinal(col) match {
         case Name       => modules.ordered(row).module.name
         case Description=> modules.ordered(row).module.description
-        case Enable     => modules.ordered(row).status.isInstalled
         case Status     => modules.ordered(row).status.toString()
         case Latest     => modules.ordered(row).module.releases(0).version
       }
@@ -163,15 +159,9 @@ class Model extends AbstractTableModel {
     }
   }
   override def isCellEditable(row: Int, col: Int): Boolean = {
-    if row >=0 && row < modules.ordered.length then
-      Column.fromOrdinal(col) == Column.Enable && ! modules.ordered(row).status.isBusying()
-    else
-      false
+    false
   }
   override def setValueAt(value: Object, row: Int, col: Int): Unit = {
-    if (Column.fromOrdinal(col) == Column.Enable) {
-      request(modules.ordered(row), value.asInstanceOf[Boolean])
-    }
   }
 }
 

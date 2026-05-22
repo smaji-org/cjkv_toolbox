@@ -71,6 +71,17 @@ object Manager {
     f
   }
 
+  def installer(m: module.Module)=
+    val moduleDir= modulesDir.resolve(m.name)
+    val exePath= moduleDir.resolve("installer.exe")
+    val jarPath= moduleDir.resolve("installer.jar")
+    if Files.exists(exePath) then
+      Some(exePath)
+    else if Files.exists(jarPath) then
+      Some(jarPath)
+    else
+      None
+
   def uninstall(m: module.Module)= {
     val (done, update_done)= react.Event.create[Try[Int]]()
     val perform: Runnable= () => {
@@ -109,6 +120,83 @@ object Manager {
   def fUninstall(m: module.Module)= {
     val f= CompletableFuture[Try[Int]]()
     uninstall(m).oneshot(f.complete(_))
+    f
+  }
+
+  def uninstaller(m: module.Module)=
+    val moduleDir= modulesDir.resolve(m.name)
+    val exePath= moduleDir.resolve("uninstaller.exe")
+    val jarPath= moduleDir.resolve("uninstaller.jar")
+    if Files.exists(exePath) then
+      Some(exePath)
+    else if Files.exists(jarPath) then
+      Some(jarPath)
+    else
+      None
+
+  def setup(m: module.Module)= {
+    val (done, update_done)= react.Event.create[Try[Int]]()
+    val perform: Runnable= () => {
+      val r= Try {
+        import scala.sys.process.*
+        val moduleDir= modulesDir.resolve(m.name)
+        val uninstallerPath= {
+          val exePath= moduleDir.resolve("setup.exe")
+          val jarPath= moduleDir.resolve("setup.jar")
+          if (Files.exists(exePath)) {
+            exePath
+          } else if (Files.exists(jarPath)) {
+            jarPath
+          } else {
+            throw FileNotFoundException(exePath.toString)
+          }
+        }
+        File(uninstallerPath.toString).setExecutable(true)
+        val p= Process(
+          Seq(startPath.toString, uninstallerPath.toString)
+            ++ createCommandOpts(m.name),
+          moduleDir.toFile()
+          ).run()
+        val r= p.exitValue()
+        r
+      }
+      update_done(r)
+    }
+    executor.submit(perform)
+    done
+  }
+
+  def fSetup(m: module.Module)= {
+    val f= CompletableFuture[Try[Int]]()
+    setup(m).oneshot(f.complete(_))
+    f
+  }
+
+  def setuper(m: module.Module)=
+    val moduleDir= modulesDir.resolve(m.name)
+    val exePath= moduleDir.resolve("setup.exe")
+    val jarPath= moduleDir.resolve("setup.jar")
+    if Files.exists(exePath) then
+      Some(exePath)
+    else if Files.exists(jarPath) then
+      Some(jarPath)
+    else
+      None
+
+  def update(m: module.Module)= {
+    val (done, update_done)= react.Event.create[Try[Int]]()
+    uninstall(m).oneshot{ r=>
+      r match
+        case Success(0)=>
+          install(m.releases.head).oneshot(update_done)
+        case _=> r
+    }
+    done
+  }
+
+  def fUpdate(m: module.Module)= {
+    val f= CompletableFuture[Try[Int]]()
+    update(m).oneshot(f.complete(_))
     f
   }
 

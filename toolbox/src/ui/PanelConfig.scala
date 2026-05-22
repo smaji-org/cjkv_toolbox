@@ -1,5 +1,6 @@
 package org.smaji.cjkv_toolbox.toolbox.ui
 
+import org.smaji.cjkv_toolbox.toolbox
 import java.awt
 import java.awt.*
 import javax.swing.*
@@ -7,7 +8,8 @@ import javax.swing.*
 class ConfigEvent {
   import org.smaji.cjkv_toolbox.toolbox.react
   object ui {
-    val (scale, scale_update)= react.Signal.create[Int](1)
+    val (scale, scale_update)= react.Signal.create[Int]
+      (toolbox.config.Manager.ui.scale)
   }
 
   object update {
@@ -20,8 +22,10 @@ class ConfigEvent {
   }
 
   object start {
-    val (auto, update_auto)= react.Signal.create[Boolean](false)
-    val (minimized, update_minimized)= react.Signal.create[Boolean](false)
+    val (auto, update_auto)= react.Signal.create[Boolean]
+      (toolbox.config.Manager.startup.autostart)
+    val (minimized, update_minimized)= react.Signal.create[Boolean]
+      (toolbox.config.Manager.startup.minimized)
   }
 }
 

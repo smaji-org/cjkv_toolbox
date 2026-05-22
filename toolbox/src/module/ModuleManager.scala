@@ -1,6 +1,6 @@
 package org.smaji.cjkv_toolbox.toolbox.module
 
-import org.smaji.cjkv_toolbox.toolbox.*
+import org.smaji.cjkv_toolbox.toolbox.{setup => m_setup, *}
 
 import util.*
 
@@ -23,6 +23,12 @@ import java.security.InvalidParameterException
     1. busying
  */
 object Manager {
+  enum Action:
+    case Install   extends Action
+    case Uninstall extends Action
+    case Update    extends Action
+    case Setup     extends Action
+
   val defaultInterval= 60*60*24 // 1 day
   if (config.Manager.update.interval <= 0) {
     config.Manager.update.interval= defaultInterval
@@ -41,6 +47,7 @@ object Manager {
 
   val indexExecutor = Executors.newSingleThreadScheduledExecutor()
 
+  /*
   model.requestEnableModule.map { (node, selected)=>
     val status= node.status; import status.*
     if (isInstalled || isBroken) && !selected then
@@ -48,13 +55,14 @@ object Manager {
     else if (isUninstalled || isBroken) && selected then
       install(node)
   }
+  */
 
   def uninstall(node: model.Node)= {
     val f= CompletableFuture[Try[Int]]()
     node.status match {
       case model.Installed(version) =>
         node.status= model.Uninstalling(version)
-        val unistallEvent= setup.Manager.uninstall(node.module)
+        val unistallEvent= m_setup.Manager.uninstall(node.module)
         unistallEvent map { r =>
           r match {
             case Success(0) =>
@@ -62,10 +70,10 @@ object Manager {
               config.Manager.modules=
                 config.Manager.modules.removed(node.module.name)
             case Success(_) =>
-              node.status= model.Broken()
+              node.status= model.Broken(version)
               if debug then println("uninstall failed")
             case Failure(exception) =>
-              node.status= model.Broken()
+              node.status= model.Broken(version)
               println(exception)
           }
           f.complete(r)
@@ -82,8 +90,8 @@ object Manager {
     node.status match {
       case model.Uninstalled() =>
         val release= node.module.releases.head
-        val installEvent= setup.Manager.install(release)
-        node.status= model.Installing(release.version)
+        val installEvent= m_setup.Manager.install(release)
+        node.status= model.Installing(release)
         installEvent map { r =>
           r match {
             case Success(0) =>
@@ -91,11 +99,11 @@ object Manager {
               val version= release.version
               val datetime= OffsetDateTime.now(zoneUTC)
               val moduleInfo= InstalledModuleInfo(name, version, datetime)
-              node.status= model.Installed(release.version)
+              node.status= model.Installed(release)
               config.Manager.modules=
                 config.Manager.modules.updated(name, moduleInfo)
             case Success(_) =>
-              node.status= model.Broken()
+              node.status= model.Broken(release)
               if debug then println("install failed")
             case Failure(exception) =>
               node.status= model.Uninstalled()
@@ -109,6 +117,70 @@ object Manager {
     f
   }
 
+  def update(node: model.Node)= {
+    val f= CompletableFuture[Try[Int]]()
+
+    node.status match {
+      case model.Installed(release) =>
+        val release= node.module.releases.head
+        val updateEvent= m_setup.Manager.update(node.module)
+        node.status= model.Installing(release)
+        updateEvent map { r =>
+          r match {
+            case Success(0) =>
+              val name= node.module.name
+              val version= release.version
+              val datetime= OffsetDateTime.now(zoneUTC)
+              val moduleInfo= InstalledModuleInfo(name, version, datetime)
+              node.status= model.Installed(release)
+              config.Manager.modules=
+                config.Manager.modules.updated(name, moduleInfo)
+            case Success(_) =>
+              node.status= model.Broken(release)
+              if debug then println("install failed")
+            case Failure(exception) =>
+              node.status= model.Uninstalled()
+              println(exception)
+          }
+          f.complete(r)
+        }
+      case _ =>
+        f.complete(Failure(InvalidParameterException()))
+    }
+    f
+  }
+
+  def setup(node: model.Node)= {
+    val f= CompletableFuture[Try[Int]]()
+
+    node.status match {
+      case model.Installed(version)=>
+        val release= node.module.releases.head
+        val setupEvent= m_setup.Manager.setup(node.module)
+        setupEvent map { r =>
+          r match {
+            case Success(_) =>
+            case Failure(exception) =>
+              node.status= model.Broken(version)
+          }
+          f.complete(r)
+        }
+      case model.Broken(version)=>
+        val release= node.module.releases.head
+        val setupEvent= m_setup.Manager.setup(node.module)
+        setupEvent map { r =>
+          r match {
+            case Success(0) =>
+              node.status= model.Installed(version)
+            case _ =>
+          }
+          f.complete(r)
+        }
+      case _ =>
+        f.complete(Failure(InvalidParameterException()))
+    }
+    f
+  }
   def loadIndex()= {
     if debug then println("loadIndex")
     import collection.immutable.ArraySeq
@@ -249,14 +321,13 @@ object Manager {
 
     val moduleInstalled= config.Manager.modules
     val moduleNodes= modules.map { m =>
-      val status=
-        moduleInstalled
-          .find((name, info)=>
-            m.name == name && m.releases.exists(_.version == info.version))
-          .map((name, info)=> info.version)
-          match
-            case Some(version)=> model.Installed(version)
-            case None=> model.Uninstalled()
+      val status= moduleInstalled
+        .find((name, info)=>
+          m.name == name && m.releases.exists(_.version == info.version))
+        .map((name, info)=> m.releases.find(r=> r.version == info.version).get)
+        match
+          case Some(release)=> model.Installed(release)
+          case None=> model.Uninstalled()
       model.Node(m, status)
     }
     model.loadModuleInfo(moduleNodes)
@@ -312,12 +383,12 @@ object Manager {
     if (busying.get()) {
       busying.oneshot { busying=>
         if (!busying) {
-          setup.Manager.installToolbox(latest)
+          m_setup.Manager.installToolbox(latest)
         }
       }
       ()
     } else {
-      setup.Manager.installToolbox(latest)
+      m_setup.Manager.installToolbox(latest)
     }
   }
 
@@ -329,7 +400,7 @@ object Manager {
         model.modules.ordered.foreach { node=>
           node.status match {
             case model.Installed(current)=>
-              if current != node.module.releases(0).version then
+              if current != node.module.releases(0) then
                 uninstall(node).thenAccept { r=>
                   r match {
                     case Success(0) =>

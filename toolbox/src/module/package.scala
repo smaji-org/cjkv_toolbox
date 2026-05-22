@@ -29,6 +29,13 @@ case class Release(
   val patch= version_desc.unapply(2).getOrElse("0").toInt
   val suffix= version_desc.unapply(3).getOrElse("0").toInt
   override def toString(): String = version
+  override def equals(that: Any)=
+    that match
+      case r: Release=>
+        module.name == r.module.name
+        && version == r.version
+        && dateTime == r.dateTime
+      case _ => false
 }
 
 case class Module(val name: String, val description: String, var releases: ArraySeq[Release]) {

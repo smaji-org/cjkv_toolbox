@@ -59,7 +59,7 @@ object MainWindow {
     val iconModules= ImageIcon(loadImage("images/modules.png", emHeight))
     val iconConfig= ImageIcon(loadImage("images/config.png", emHeight))
 
-    val (panelModules, moduleSignal)= createPanelModules(emHeight, padding)
+    val panelModules= createPanelModules(emHeight, padding)
     val (panelConfig, configSignal, panelConfigPostSetup)= createPanelConfig(emHeight, padding)
 
     tabbedPane.addTab("Config ", iconConfig, panelConfig)
@@ -85,7 +85,6 @@ object MainWindow {
       override def paintComponent(g: Graphics)= p(g)
     }
     frame.setGlassPane(maskPane)
-    maskPane.setOpaque(false)
 
     if (config.Manager.startup.minimized) {
     } else {
