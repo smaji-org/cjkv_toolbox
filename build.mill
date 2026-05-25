@@ -33,6 +33,7 @@ object toolbox extends ToolboxModule:
   def release= Task:
     copy(assembly().path, Task.dest / "toolbox" / "toolbox.jar")
     copy(installer.assembly().path, Task.dest / "toolbox" / "installer.jar")
+    copy(native_aux.toolbox.compile().path, Task.dest / "toolbox" / "toolbox")
     PathRef(Task.dest)
 
   def releasePackaged= Task:
@@ -65,3 +66,4 @@ trait GoCross extends Module:
 object native_aux extends Module:
   object start extends GoCross
   object autostart extends GoCross
+  object toolbox extends GoCross
