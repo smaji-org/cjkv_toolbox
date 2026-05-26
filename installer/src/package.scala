@@ -1,4 +1,4 @@
-package org.smaji.cjkv_toolbox.upgrader
+package org.smaji.cjkv_toolbox.installer
 
 import java.nio.file.Paths
 

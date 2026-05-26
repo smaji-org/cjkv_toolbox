@@ -1,4 +1,4 @@
-package org.smaji.cjkv_toolbox.upgrader
+package org.smaji.cjkv_toolbox.installer
 
 lazy val hostOs= {
   System.getProperty("os.name") match
