@@ -30,13 +30,11 @@ object toolbox extends ToolboxModule:
   inline def copy(from: os.Path, to: os.Path)=
     os.copy(from, to, true, true, true, true, true)
 
-  def png= Task.Source("resources/images/toolbox.png")
-  def desktop= Task.Source("resources/toolbox.desktop")
+  def wrap= Task.Source("resources/toolbox")
   def release= Task:
     copy(assembly().path, Task.dest / "toolbox" / "toolbox.jar")
     copy(installer.assembly().path, Task.dest / "toolbox" / "installer.jar")
-    copy(png().path, Task.dest / "toolbox" / "toolbox.png")
-    copy(desktop().path, Task.dest / "toolbox" / "toolbox.desktop")
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
     PathRef(Task.dest)
 
   def releasePackaged= Task:

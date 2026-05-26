@@ -1,9 +1,0 @@
-[Desktop Entry]
-Comment=Smaji Cjkv Toolbox
-Exec=java -jar ./toolbox.jar
-Name=Smaji Cjkv Toolbox
-Icon=./toolbox.png
-Hidden=false
-NoDisplay=false
-Type=Application
-X-GNOME-Autostart-enabled=true
