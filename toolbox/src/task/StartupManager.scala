@@ -111,7 +111,6 @@ object Manager {
   val executor = Executors.newSingleThreadScheduledExecutor()
 
   val toolboxDir= jarPath.getParent()
-  val startPath= toolboxDir.resolve("cjkv_toolbox_start")
 
   val autostart= hostOs match {
     case "darwin"=> darwin

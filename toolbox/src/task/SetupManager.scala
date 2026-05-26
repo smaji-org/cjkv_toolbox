@@ -13,7 +13,11 @@ object Manager {
 
   val executor = Executors.newCachedThreadPool()
 
-  val startPath= toolboxDir.resolve("cjkv_toolbox_start")
+  def wrapExe(path: String)=
+    if path.endsWith(".jar") then
+      Seq("java", "-jar", path)
+    else
+      Seq(path)
 
   def createCommandOpts(name: String)=
     Seq(
@@ -49,7 +53,7 @@ object Manager {
         }
         File(installerPath.toString).setExecutable(true)
         val p= Process(
-          Seq(startPath.toString, installerPath.toString)
+          wrapExe(installerPath.toString)
             ++ createCommandOpts(m.name),
           moduleDir.toFile()
           ).run()
@@ -101,7 +105,7 @@ object Manager {
         }
         File(uninstallerPath.toString).setExecutable(true)
         val p= Process(
-          Seq(startPath.toString, uninstallerPath.toString)
+          wrapExe(uninstallerPath.toString)
             ++ createCommandOpts(m.name),
           moduleDir.toFile()
           ).run()
@@ -153,7 +157,7 @@ object Manager {
         }
         File(uninstallerPath.toString).setExecutable(true)
         val p= Process(
-          Seq(startPath.toString, uninstallerPath.toString)
+          wrapExe(uninstallerPath.toString)
             ++ createCommandOpts(m.name),
           moduleDir.toFile()
           ).run()
@@ -231,7 +235,7 @@ object Manager {
         if debug then println(s"installerPath is $installerPath")
         File(installerPath.toString).setExecutable(true)
         if debug then println(s"begin installing ${m.name}, $os, ${archs.head}")
-        val cmd= Seq(startPath.toString, installerPath.toString) ++ createCommandOpts(m.name)
+        val cmd= wrapExe(installerPath.toString) ++ createCommandOpts(m.name)
         if debug then println(s"$cmd")
         val p= Process(cmd, moduleDir.toFile()).run()
         System.exit(0)

@@ -65,5 +65,4 @@ trait GoCross extends Module:
     PathRef(Task.dest)
 
 object native_aux extends Module:
-  object start extends GoCross
   object autostart extends GoCross
