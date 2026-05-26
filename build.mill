@@ -31,15 +31,62 @@ object toolbox extends ToolboxModule:
     os.copy(from, to, true, true, true, true, true)
 
   def wrap= Task.Source("resources/toolbox")
+
   def release= Task:
     copy(assembly().path, Task.dest / "toolbox" / "toolbox.jar")
     copy(installer.assembly().path, Task.dest / "toolbox" / "installer.jar")
-    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
     PathRef(Task.dest)
 
   def releasePackaged= Task:
     val dest= Task.dest / "toolbox.tgz"
-    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox"))
+    copy(releasePackaged_any().path, Task.dest / "any_any" / "toolbox.tgz")
+    copy(releasePackaged_win_amd64().path, Task.dest / "win_amd64" / "toolbox.tgz")
+    copy(releasePackaged_win_386().path, Task.dest / "win_386" / "toolbox.tgz")
+    copy(releasePackaged_win_arm64().path, Task.dest / "win_arm64" / "toolbox.tgz")
+    copy(releasePackaged_win_arm().path, Task.dest / "win_arm" / "toolbox.tgz")
+    PathRef(dest)
+
+  def releasePackaged_any= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "toolbox")
+    PathRef(dest)
+
+  def releasePackaged_win_amd64= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(
+      native_aux.autostart.compile().path / "windows" / "amd64" / "cjkv_toolbox_autostart.exe",
+      Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_win_386= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(
+      native_aux.autostart.compile().path / "windows" / "386" / "cjkv_toolbox_autostart.exe",
+      Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_win_arm64= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(
+      native_aux.autostart.compile().path / "windows" / "arm64" / "cjkv_toolbox_autostart.exe",
+      Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_win_arm= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(
+      native_aux.autostart.compile().path / "windows" / "arm" / "cjkv_toolbox_autostart.exe",
+      Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
     PathRef(dest)
 
 object installer extends ToolboxModule:
