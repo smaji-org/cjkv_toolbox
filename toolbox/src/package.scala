@@ -47,9 +47,20 @@ lazy val toolboxDir=
 
 lazy val userConfigDir=
   hostOs match
-    case "windows" => Paths.get(System.getenv("AppData"))
+    case "windows" => Paths.get(System.getenv("LocalAppData"))
     case _ => Option(System.getenv("XDG_CONFIG_HOME")).map(Paths.get(_))
       .getOrElse(Paths.get(System.getProperty("user.home"), ".config"))
+
+lazy val userDataDir=
+  hostOs match
+    case "windows" => Paths.get(System.getenv("LocalAppData"))
+    case _ => Option(System.getenv("XDG_DATA_HOME ")).map(Paths.get(_))
+      .getOrElse(Paths.get(System.getProperty("user.home"), ".local", "share"))
+
+lazy val userFontDir=
+  hostOs match
+    case "windows" => userDataDir.resolve("Microsoft/Windows/Fonts")
+    case _ => userDataDir.resolve("fonts")
 
 lazy val configDir= {
   val skel= Seq("smaji", "cjkv_toolbox")
