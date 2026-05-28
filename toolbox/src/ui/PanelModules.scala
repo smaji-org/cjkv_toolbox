@@ -69,11 +69,9 @@ def createPanelModules(emHeight: Int, padding: Int)= {
               val menu= JPopupMenu("Installed")
               val itemUpdate= JMenuItem("update")
               itemUpdate.addActionListener(_=>
-                println(s"update $node")
                 module.Manager.update(node))
               val itemUninstall= JMenuItem("uninstall")
               itemUninstall.addActionListener(_=>
-                println(s"uninstall $node")
                 module.Manager.uninstall(node))
               menu.add(itemUpdate)
               menu.add(itemUninstall)

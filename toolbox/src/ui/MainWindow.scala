@@ -80,7 +80,6 @@ object MainWindow {
         val grayMask = Color(128, 128, 128, 128)
         g.setColor(grayMask)
         g.fillRect(0, 0, getWidth(), getHeight())
-        println(s"${getWidth()}, ${getHeight()}")
 
       override def paintComponent(g: Graphics)= p(g)
     }
@@ -94,7 +93,6 @@ object MainWindow {
 
   def setupPanelConfig(signals: ConfigEvent)= {
     signals.update.check map { msg =>
-      println("signals update check")
       module.Manager.updateIndexNow()
     }
 

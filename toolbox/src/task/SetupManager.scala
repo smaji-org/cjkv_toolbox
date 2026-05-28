@@ -32,7 +32,7 @@ object Manager {
     val (done, update_done)= react.Event.create[Try[Int]]()
     val perform: Runnable= () => {
       val r= Try {
-        println(s"install ${m.name}, $os, ${archs.head}")
+        if debug then println(s"install ${m.name}, $os, ${archs.head}")
         import scala.sys.process.*
         val downloader= CjkvDownloader()
         val target= s"/module/${m.name}/${release.version}/$os/${archs.head}/${m.name}.tgz"
