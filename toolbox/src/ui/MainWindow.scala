@@ -123,6 +123,8 @@ object MainWindow {
 
     val menuHelp= JMenu("Help")
     val itemAbout= menuHelp.add("About")
+    menuHelp.addSeparator()
+    val itemReset= menuHelp.add("Reset")
 
     menuBar.add(menuFile)
     menuBar.add(menuHelp)
@@ -140,8 +142,24 @@ object MainWindow {
     val imageQuit= highDpiImageIcon(loadImage("images/quit.png"), emHeight, emHeight)
     itemQuit.setIcon(imageQuit)
 
+    val imageAbout= highDpiImageIcon(loadImage("images/about.png"), emHeight, emHeight)
+    itemAbout.setIcon(imageAbout)
+
+    val imageReset= highDpiImageIcon(loadImage("images/reset.png"), emHeight, emHeight)
+    itemReset.setIcon(imageReset)
+
     itemHide.addActionListener(_ => frame.setVisible(false))
     itemQuit.addActionListener(_ => quit())
+
+    val resetDialog= Reset.create(frame)
+    resetDialog.addComponentListener:
+      import java.awt.event.*
+      new ComponentAdapter:
+        override def componentShown (e: ComponentEvent)=
+          frame.getGlassPane().setVisible(true)
+        override def componentHidden (e: ComponentEvent)=
+          frame.getGlassPane().setVisible(false)
+    itemReset.addActionListener(_ => resetDialog.setVisible(true))
 
     val aboutDialog= About.create(frame)
     aboutDialog.addComponentListener:
@@ -168,7 +186,7 @@ object MainWindow {
     val tray = SystemTray.getSystemTray()
 
     // Create a pop-up menu components
-    val itemQuit = MenuItem("Exit")
+    val itemQuit = MenuItem("Quit")
     itemQuit.addActionListener(_ => quit())
 
     //Add components to pop-up menu

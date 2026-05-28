@@ -98,8 +98,8 @@ object About {
     }
     tabbedPane.addTab("Contribution ", panelContributions)
 
-    dialog.setMinimumSize(Dimension(400,300))
     dialog.pack()
+    dialog.setMinimumSize(dialog.getSize())
     panelInfo.grabFocus()
 
     dialog

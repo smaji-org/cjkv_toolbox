@@ -8,6 +8,9 @@ object Main {
 
   def main(args: Array[String]): Unit= {
     init()
-    ui.MainWindow.main()
+    if args.length > 0 && args(0) == "reset" then
+      reset()
+    else
+      ui.MainWindow.main()
   }
 }
