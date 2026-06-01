@@ -2,10 +2,7 @@ package org.smaji.cjkv_toolbox.toolbox
 
 import java.nio.file.{Path, Paths, Files}
 
-inline val debug= true
 var swingInitialized= false
-
-val version= "0.1.0"
 
 lazy val hostArch= {
   System.getProperty("os.arch") match
