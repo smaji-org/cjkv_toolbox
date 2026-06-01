@@ -109,17 +109,7 @@ class Model extends AbstractTableModel {
       (_.isBusying())
       (ordered.map(_.statusSignal)*)
     busying_proxy.map(update_busying(_))
-    /*
-      nodes.foreach { node =>
-        println(s"${node.module.name}:")
-        node.module.releases.foreach { _.platforms.foreach { (os, archs) =>
-          print(s"  ${os}:")
-          archs.foreach(arch=> print(s" ${arch}"))
-          println()
-          }
-        }
-      }
-    */
+
     if org.smaji.cjkv_toolbox.toolbox.swingInitialized then
       SwingUtilities.invokeLater(()=>fireTableDataChanged())
     else

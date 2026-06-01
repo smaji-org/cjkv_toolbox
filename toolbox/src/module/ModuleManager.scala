@@ -47,16 +47,6 @@ object Manager {
 
   val indexExecutor = Executors.newSingleThreadScheduledExecutor()
 
-  /*
-  model.requestEnableModule.map { (node, selected)=>
-    val status= node.status; import status.*
-    if (isInstalled || isBroken) && !selected then
-      uninstall(node)
-    else if (isUninstalled || isBroken) && selected then
-      install(node)
-  }
-  */
-
   def uninstall(node: model.Node)= {
     val f= CompletableFuture[Try[Int]]()
     node.status match {
@@ -74,7 +64,7 @@ object Manager {
               if debug then println("uninstall failed")
             case Failure(exception) =>
               node.status= model.Broken(version)
-              println(exception)
+              System.err.println(exception)
           }
           f.complete(r)
         }
@@ -107,7 +97,7 @@ object Manager {
               if debug then println("install failed")
             case Failure(exception) =>
               node.status= model.Uninstalled()
-              println(exception)
+              System.err.println(exception)
           }
           f.complete(r)
         }
@@ -140,7 +130,7 @@ object Manager {
               if debug then println("install failed")
             case Failure(exception) =>
               node.status= model.Uninstalled()
-              println(exception)
+              System.err.println(exception)
           }
           f.complete(r)
         }
