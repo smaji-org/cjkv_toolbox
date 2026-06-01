@@ -2,7 +2,7 @@ package org.smaji.cjkv_toolbox.toolbox
 
 import java.nio.file.{Path, Paths, Files}
 
-val debug= true
+inline val debug= true
 var swingInitialized= false
 
 val version= "0.1.0"

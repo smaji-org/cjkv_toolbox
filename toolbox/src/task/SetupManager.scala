@@ -27,15 +27,16 @@ object Manager {
 
   def install(release: module.Release)= {
     val m= release.module
-    val (os, archs)= release.platforms.head
+    val os= release.platforms.getOrElse(hostOs, release.platforms("any"))
+    val arch= if os.contains(hostArch) then hostArch else "any"
 
     val (done, update_done)= react.Event.create[Try[Int]]()
     val perform: Runnable= () => {
       val r= Try {
-        if debug then println(s"install ${m.name}, $os, ${archs.head}")
+        if debug then println(s"install ${m.name}, $os, ${arch}")
         import scala.sys.process.*
         val downloader= CjkvDownloader()
-        val target= s"/module/${m.name}/${release.version}/$os/${archs.head}/${m.name}.tgz"
+        val target= s"/module/${m.name}/${release.version}/$os/${arch}/${m.name}.tgz"
         downloader.downloadAndExtract(target, modulesDir) match
           case Failure(exception) => throw(exception)
           case Success(value) => ()
@@ -209,13 +210,14 @@ object Manager {
     if (version != release.version) {
 
       val m= release.module
-      val (os, archs)= release.platforms.head
+      val os= release.platforms.getOrElse(hostOs, release.platforms("any"))
+      val arch= if os.contains(hostArch) then hostArch else "any"
 
       val r= Try {
-        if debug then println(s"downloading ${m.name}, $os, ${archs.head}")
+        if debug then println(s"downloading ${m.name}, $os, ${arch}")
         import scala.sys.process.*
         val downloader= CjkvDownloader()
-        val target= s"/module/${m.name}/${release.version}/$os/${archs.head}/${m.name}.tgz"
+        val target= s"/module/${m.name}/${release.version}/$os/${arch}/${m.name}.tgz"
         downloader.downloadAndExtract(target, modulesDir) match
           case Failure(exception) => throw(exception)
           case Success(value) => ()
@@ -234,7 +236,7 @@ object Manager {
         }
         if debug then println(s"installerPath is $installerPath")
         File(installerPath.toString).setExecutable(true)
-        if debug then println(s"begin installing ${m.name}, $os, ${archs.head}")
+        if debug then println(s"begin installing ${m.name}, $os, ${arch}")
         val cmd= wrapExe(installerPath.toString) ++ createCommandOpts(m.name)
         if debug then println(s"$cmd")
         val p= Process(cmd, moduleDir.toFile()).run()
