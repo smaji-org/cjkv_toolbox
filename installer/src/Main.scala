@@ -1,16 +1,9 @@
 package org.smaji.cjkv_toolbox.installer
 
-lazy val hostOs= {
-  System.getProperty("os.name") match
-    case os if os.startsWith("Windows") => "windows"
-    case os if os.startsWith("Mac OS X") => "darwin"
-    case os => os.toLowerCase()
-}
-
 lazy val osSpecificFiles=
   hostOs match
     case "windows"=> Seq(
-      "toolbox.exe",
+      "cjkv_toolbox_autostart.exe",
       )
     case _=> Seq(
       "toolbox",
