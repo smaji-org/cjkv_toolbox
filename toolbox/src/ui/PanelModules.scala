@@ -12,8 +12,10 @@ import javax.swing.*
 
 import java.time.OffsetDateTime
 
+
 def createPanelModules(emHeight: Int, padding: Int)= {
   import org.smaji.cjkv_toolbox.toolbox.module
+  import javax.swing.table.TableCellRenderer
 
   val panelModules= JScrollPane()
 
@@ -23,7 +25,28 @@ def createPanelModules(emHeight: Int, padding: Int)= {
 
   val modulesModel= module.Manager.model
 
-  val moduleOutline= JTable(modulesModel)
+  val moduleOutline= new JTable(modulesModel) {
+    val self= this
+    def descriptionRenderer= new TableCellRenderer {
+      import toolbox.locale
+      override def getTableCellRendererComponent(table: JTable, value: Object, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int): Component =
+        val description= value.asInstanceOf[module.Description]
+        val content=
+          description.lang.find((name, _)=> name.toLowerCase(locale) == locale.getLanguage().toLowerCase(locale)) match
+            case None => description.default
+            case Some(_, lang) =>
+              lang.region.find((region, _)=> region.toLowerCase(locale) == locale.getCountry().toLowerCase(locale)) match
+                case None => lang.default
+                case Some(_, content)=> content
+        self.getDefaultRenderer(classOf[String]).getTableCellRendererComponent(table, content, isSelected, hasFocus, row, column)
+    }
+    override def getCellRenderer(row: Int, column: Int): TableCellRenderer =
+      if module.Manager.model.Column.fromOrdinal(column) == module.Manager.model.Column.Description then
+        descriptionRenderer
+      else
+        super.getCellRenderer(row, column)
+  }
+
   moduleOutline.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS)
   moduleOutline.setFillsViewportHeight(true)
 

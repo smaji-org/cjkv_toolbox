@@ -22,6 +22,56 @@ import java.security.InvalidParameterException
   Signal
     1. busying
  */
+
+case class Lang(name: String, default: String, region: Map[String, String])
+object Lang {
+  import org.w3c.dom
+  import javax.xml.xpath
+  import XPathOps.*
+  val xpathEval= xpath.XPathFactory.newInstance().newXPath()
+
+  def apply(lang: dom.Element)= {
+    val name= lang.getTagName()
+
+    val default=
+      xpathEval.getNode("default", lang) match
+        case null => ""
+        case default: dom.Element => default.getTextContent().trim()
+
+    val regions= NodeListIterOnce(lang.getChildNodes()).iterator.collect {
+      case region:dom.Element if region.getTagName != "default" =>
+        val name= region.getTagName()
+        val content= region.getTextContent().trim()
+        name -> content }
+      .toMap
+
+    new Lang(name, default, regions)
+  }
+}
+
+case class Description(default: String, lang: Map[String, Lang])
+object Description {
+  import org.w3c.dom
+  import javax.xml.xpath
+  import XPathOps.*
+  val xpathEval= xpath.XPathFactory.newInstance().newXPath()
+
+  def apply(description: org.w3c.dom.Element)= {
+    val default=
+      xpathEval.getNode("default", description) match
+        case null => ""
+        case default: dom.Element => default.getTextContent().trim()
+
+    val langs= NodeListIterOnce(description.getChildNodes()).iterator.collect {
+      case elem:dom.Element if elem.getTagName != "default" =>
+        val lang= Lang(elem)
+        lang.name -> lang }
+      .toMap
+
+    new Description(default, langs)
+  }
+}
+
 object Manager {
   enum Action:
     case Install   extends Action
@@ -227,11 +277,14 @@ object Manager {
         elem.getTagName() match
           case "module" => elem.getAttribute("name")
           case name => name
+      /*
       val description=
         xpathEval.getNode("description", elem) match {
           case null => ""
-          case description: dom.Node => description.getTextContent()
+          case description: dom.Element => description.getTextContent().trim()
         }
+      */
+      val description= Description(xpathEval.getNode("description", elem).asInstanceOf[dom.Element])
 
       def loadOs(os: dom.Node)= {
         val name= os.asInstanceOf[dom.Element].getAttribute("name")
@@ -246,10 +299,10 @@ object Manager {
       }
 
       def loadRelease(release: dom.Node, module: Module)= {
-        val version= xpathEval.getNode("version", release).getTextContent()
+        val version= xpathEval.getNode("version", release).getTextContent().trim()
         val datetime= time.OffsetDateTime.parse(
-          xpathEval.getNode("datetime", release).getTextContent())
-        val comment= xpathEval.getNode("comment", release).getTextContent()
+          xpathEval.getNode("datetime", release).getTextContent().trim())
+        val comment= xpathEval.getNode("comment", release).getTextContent().trim()
         val platforms= xpathEval.getNodeSet("os", release) match {
           case null=> Map[String, Set[String]]()
           case nodeList: dom.NodeList =>

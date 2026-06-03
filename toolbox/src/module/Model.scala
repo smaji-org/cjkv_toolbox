@@ -128,14 +128,14 @@ class Model extends AbstractTableModel {
     import Column.*
     Column.fromOrdinal(col) match {
       case Name       => classOf[String]
-      case Description=> classOf[String]
+      case Description=> classOf[Description]
       case Status     => classOf[String]
       case Latest     => classOf[String]
     }
   override def getColumnCount()= Column.values.length
   override def getRowCount()= modules.ordered.length
   override def getValueAt(row: Int, col: Int):
-    java.lang.String | java.lang.Boolean=
+    java.lang.String | java.lang.Boolean | Description=
   {
     if (row >=0 && row < modules.ordered.length) {
       import Column.*

@@ -38,8 +38,8 @@ case class Release(
       case _ => false
 }
 
-case class Module(val name: String, val description: String, var releases: ArraySeq[Release]) {
+case class Module(val name: String, val description: Description, var releases: ArraySeq[Release]) {
   override def hashCode(): Int =
-    ((name + description).hashCode() + releases.length).hashCode()
+    ((name + description.default).hashCode() + releases.length).hashCode()
 }
 
