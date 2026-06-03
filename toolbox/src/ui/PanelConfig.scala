@@ -1,6 +1,7 @@
 package org.smaji.cjkv_toolbox.toolbox.ui
 
 import org.smaji.cjkv_toolbox.toolbox
+import toolbox.t
 import java.awt
 import java.awt.*
 import javax.swing.*
@@ -83,7 +84,7 @@ def createPanelConfig(emHeight: Int, padding: Int)= {
   scaleSelector.setMaximumSize(scaleSelector.getPreferredSize())
 
   panelUiScale.add(scaleSelector)
-  panelUiScale.add(JLabel("UI Scale for HiDPI, will take effect after restarting"))
+  panelUiScale.add(JLabel(t("UI Scale for HiDPI, will take effect after restarting")))
   panelUiScale.add(Box.createHorizontalGlue())
 
   // panelUi signal
@@ -114,17 +115,17 @@ def createPanelConfig(emHeight: Int, padding: Int)= {
   panelUpdate.add(Box.createVerticalGlue())
 
   panelUpdateToolbox.setLineBoxLayout()
-  val checkUpdateToolbox= JCheckBox("Update Toolbox automatically")
+  val checkUpdateToolbox= JCheckBox(t("Update Toolbox automatically"))
   panelUpdateToolbox.add(checkUpdateToolbox)
   panelUpdateToolbox.add(Box.createHorizontalGlue())
-  val btnUpdateToolbox= JButton("Update Toolbox now")
+  val btnUpdateToolbox= JButton(t("Update Toolbox now"))
   panelUpdateToolbox.add(btnUpdateToolbox)
 
   panelUpdateModules.setLineBoxLayout()
-  val checkUpdateModules= JCheckBox("Update the modules automatically")
+  val checkUpdateModules= JCheckBox(t("Update the modules automatically"))
   panelUpdateModules.add(checkUpdateModules)
   panelUpdateModules.add(Box.createHorizontalGlue)
-  val btnUpdateModules= JButton("Update modules now")
+  val btnUpdateModules= JButton(t("Update modules now"))
   panelUpdateModules.add(btnUpdateModules)
 
   panelUpdatePerodic.setLineBoxLayout()
@@ -132,9 +133,9 @@ def createPanelConfig(emHeight: Int, padding: Int)= {
   intervalTime.setMaximumSize(intervalTime.getPreferredSize())
 
   panelUpdatePerodic.add(intervalTime)
-  panelUpdatePerodic.add(JLabel("Periodic update check"))
+  panelUpdatePerodic.add(JLabel(t("Periodic update check")))
   panelUpdatePerodic.add(Box.createHorizontalGlue())
-  val btnUpdateCheck= JButton("Check now")
+  val btnUpdateCheck= JButton(t("Check now"))
   panelUpdatePerodic.add(btnUpdateCheck)
 
   // panelUpdate loadConfig
@@ -185,10 +186,10 @@ def createPanelConfig(emHeight: Int, padding: Int)= {
   panelStartup.setBorder(EmptyBorder(5,5,5,5))
 
   panelStartup.add(Box.createVerticalGlue())
-  val checkAutostart= JCheckBox("Autostart Toolbox")
+  val checkAutostart= JCheckBox(t("Autostart Toolbox"))
   panelStartup.add(checkAutostart)
   panelStartup.add(Box.createVerticalGlue())
-  val checkMinimized= JCheckBox("Start minimized")
+  val checkMinimized= JCheckBox(t("Start minimized"))
   panelStartup.add(checkMinimized)
   panelStartup.add(Box.createVerticalGlue())
 

@@ -62,10 +62,10 @@ object MainWindow {
     val panelModules= createPanelModules(emHeight, padding)
     val (panelConfig, configSignal, panelConfigPostSetup)= createPanelConfig(emHeight, padding)
 
-    tabbedPane.addTab("Config ", iconConfig, panelConfig)
+    tabbedPane.addTab(t("Config"), iconConfig, panelConfig)
     content.add(tabbedPane)
     frame.pack()
-    tabbedPane.insertTab("Modules ", iconModules, panelModules, null, 0)
+    tabbedPane.insertTab(t("Modules"), iconModules, panelModules, null, 0)
     tabbedPane.setSelectedIndex(0)
 
     val currentSize= frame.getSize()
@@ -114,15 +114,15 @@ object MainWindow {
   def setupMenubar()= {
     val menuBar= JMenuBar()
 
-    val menuFile= JMenu("File")
-    val itemHide= menuFile.add("Hide")
+    val menuFile= JMenu(t("File"))
+    val itemHide= menuFile add t("Hide")
     menuFile.addSeparator()
-    val itemQuit= menuFile.add("Quit")
+    val itemQuit= menuFile add t("Quit")
 
-    val menuHelp= JMenu("Help")
-    val itemAbout= menuHelp.add("About")
+    val menuHelp= JMenu(t("Help"))
+    val itemAbout= menuHelp add t("About")
     menuHelp.addSeparator()
-    val itemReset= menuHelp.add("Reset")
+    val itemReset= menuHelp add t("Reset")
 
     menuBar.add(menuFile)
     menuBar.add(menuHelp)
@@ -184,7 +184,7 @@ object MainWindow {
     val tray = SystemTray.getSystemTray()
 
     // Create a pop-up menu components
-    val itemQuit = MenuItem("Quit")
+    val itemQuit = MenuItem(t("Quit"))
     itemQuit.addActionListener(_ => quit())
 
     //Add components to pop-up menu

@@ -6,6 +6,7 @@ import scala.jdk.CollectionConverters.*
 import org.smaji.cjkv_toolbox.toolbox.react
 import javax.swing.table.AbstractTableModel
 import scala.collection.immutable.ArraySeq
+import org.smaji.cjkv_toolbox.toolbox.t
 
 /*
   Type:
@@ -48,10 +49,10 @@ class Model extends AbstractTableModel {
       }
   }
   case class Uninstalled() extends Status
-  case class Installed(version: Release) extends Status
-  case class Uninstalling(version: Release) extends Status
-  case class Installing(version: Release) extends Status
-  case class Broken(version: Release) extends Status
+  case class Installed(release: Release) extends Status
+  case class Uninstalling(release: Release) extends Status
+  case class Installing(release: Release) extends Status
+  case class Broken(release: Release) extends Status
 
   enum Column:
     case Name         extends Column
@@ -121,7 +122,7 @@ class Model extends AbstractTableModel {
     node.status= status
 
   override def getColumnName(col: Int): String=
-    Column.fromOrdinal(col).toString()
+    t(Column.fromOrdinal(col).toString())
   override def getColumnClass(col: Int): Class[?]=
     import java.lang.*
     import Column.*
@@ -141,7 +142,13 @@ class Model extends AbstractTableModel {
       Column.fromOrdinal(col) match {
         case Name       => modules.ordered(row).module.name
         case Description=> modules.ordered(row).module.description
-        case Status     => modules.ordered(row).status.toString()
+        case Status     => modules.ordered(row).status match {
+          case Uninstalled() => t("Uninstalled")
+          case Uninstalling(release) => s"${t("Uninstalling")} ${release.version}"
+          case Installed(release) => s"${t("Installed")} ${release.version}"
+          case Installing(release) => s"${t("Installing")} ${release.version}"
+          case Broken(release) => s"${t("Broken")} ${release.version}"
+          }
         case Latest     => modules.ordered(row).module.releases(0).version
       }
     } else {

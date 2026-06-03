@@ -10,6 +10,7 @@ import java.awt.event.MouseEvent
 object Reset {
   import ContainerOps.*
   import org.smaji.cjkv_toolbox.toolbox
+  import toolbox.t
 
   def create(frame: JFrame)= {
     val dialog= JDialog(frame, true)
@@ -27,6 +28,7 @@ object Reset {
       wrap.add(panel)
 
       val infoContent=
+        /*
         val label=
           JLabel(s"""
           |<html>
@@ -43,6 +45,13 @@ object Reset {
           |  by removing the directory containing this software:<br/>
           |  <font color="green">${toolbox.toolboxDir}</font>
           |</html>""".stripMargin.stripPrefix("\n"))
+        */
+        val label=
+          JLabel(s"""
+          |<html>
+          |  ${t("resetInfo")}
+          |  <font color="green">${toolbox.toolboxDir}</font>
+          |</html>""".stripMargin.stripPrefix("\n"))
         label
       panel.add(infoContent)
 
@@ -50,7 +59,7 @@ object Reset {
 
       val resetBtn=
         val button=
-          JButton("Reset")
+          JButton(t("Reset"))
         button.addActionListener(_=> toolbox.reset())
         button
       panel.add(resetBtn)

@@ -27,8 +27,9 @@ object Manager {
 
   def install(release: module.Release)= {
     val m= release.module
-    val os= release.platforms.getOrElse(hostOs, release.platforms(anyOs))
-    val arch= if os.contains(hostArch) then hostArch else anyArch
+    val os= if release.platforms.exists((os, arch)=> os==hostOs) then hostOs else anyOs
+    val osSet= release.platforms.getOrElse(hostOs, release.platforms(anyOs))
+    val arch= if osSet.contains(hostArch) then hostArch else anyArch
 
     val (done, update_done)= react.Event.create[Try[Int]]()
     val perform: Runnable= () => {
@@ -210,8 +211,9 @@ object Manager {
     if (version != release.version) {
 
       val m= release.module
-      val os= release.platforms.getOrElse(hostOs, release.platforms(anyOs))
-      val arch= if os.contains(hostArch) then hostArch else anyArch
+      val os= if release.platforms.exists((os, arch)=> os==hostOs) then hostOs else anyOs
+      val osSet= release.platforms.getOrElse(hostOs, release.platforms(anyOs))
+      val arch= if osSet.contains(hostArch) then hostArch else anyArch
 
       val r= Try {
         if debug then println(s"downloading ${m.name}, $os, ${arch}")

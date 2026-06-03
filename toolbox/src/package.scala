@@ -116,3 +116,6 @@ def highDpiImageIcon(image: Image, width: Int, height: Int)= {
   }
 }
 
+lazy val locale= java.util.Locale.getDefault()
+lazy val uiLangBundle= java.util.ResourceBundle.getBundle("l10n/ui", locale)
+def t(msg: String)= uiLangBundle getString msg

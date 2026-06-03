@@ -1,6 +1,7 @@
 package org.smaji.cjkv_toolbox.toolbox.ui
 
 import org.smaji.cjkv_toolbox.toolbox
+import toolbox.t
 
 import util.*
 import scala.jdk.CollectionConverters.*
@@ -44,7 +45,7 @@ def createPanelModules(emHeight: Int, padding: Int)= {
         var menu= node.status match
           case modulesModel.Uninstalled()=>
             val menu= JPopupMenu("Uninstalled")
-            val itemInstall= JMenuItem("Install")
+            val itemInstall= JMenuItem(t("Install"))
             itemInstall.addActionListener(_=>
               module.Manager.install(node))
             menu.add(itemInstall)
@@ -52,13 +53,13 @@ def createPanelModules(emHeight: Int, padding: Int)= {
           case modulesModel.Installed(_)=>
             if toolbox.setup.Manager.setuper(node.module).isDefined then
               val menu= JPopupMenu("InstalledWithSetup")
-              val itemUpdate= JMenuItem("update")
+              val itemUpdate= JMenuItem(t("Update"))
               itemUpdate.addActionListener(_=>
                 module.Manager.update(node))
-              val itemSetup= JMenuItem("setup")
+              val itemSetup= JMenuItem(t("Setup"))
               itemSetup.addActionListener(_=>
                 module.Manager.setup(node))
-              val itemUninstall= JMenuItem("uninstall")
+              val itemUninstall= JMenuItem(t("Uninstall"))
               itemUninstall.addActionListener(_=>
                 module.Manager.uninstall(node))
               menu.add(itemUpdate)
@@ -67,10 +68,10 @@ def createPanelModules(emHeight: Int, padding: Int)= {
               Some(menu)
             else
               val menu= JPopupMenu("Installed")
-              val itemUpdate= JMenuItem("update")
+              val itemUpdate= JMenuItem(t("Update"))
               itemUpdate.addActionListener(_=>
                 module.Manager.update(node))
-              val itemUninstall= JMenuItem("uninstall")
+              val itemUninstall= JMenuItem(t("Uninstall"))
               itemUninstall.addActionListener(_=>
                 module.Manager.uninstall(node))
               menu.add(itemUpdate)

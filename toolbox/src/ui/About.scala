@@ -10,6 +10,7 @@ import java.awt.event.MouseEvent
 object About {
   import ContainerOps.*
   import org.smaji.cjkv_toolbox.toolbox.version
+  import org.smaji.cjkv_toolbox.toolbox.t
 
   def create(frame: JFrame)= {
     val dialog= JDialog(frame, true)
@@ -37,10 +38,10 @@ object About {
           |  <b>CJKV Toolbox</b> © 2023 - 2026 <b>Smaji</b>
           |  <br/>
           |  <br/>
-          |  <b>Version:</b> ${version}
+          |  <b>${t("Version:")}</b> ${version}
           |  <br/>
           |  <br/>
-          |  <b>Links:</b>
+          |  <b>${t("Links:")}</b>
           |</html>""".stripMargin.stripPrefix("\n"))
         label
       panel.add(infoContent)
@@ -79,7 +80,7 @@ object About {
 
       wrap
     }
-    tabbedPane.addTab("Info ", panelInfo)
+    tabbedPane.addTab(t("Info"), panelInfo)
 
     val panelContributions= {
       val panel= JPanel()
@@ -87,16 +88,16 @@ object About {
       val wrap= JPanel()
       wrap.setAlignmentX(Component.CENTER_ALIGNMENT)
       wrap.add(panel)
-      panel.add(JLabel("""
+      panel.add(JLabel(s"""
        |<html>
-       |  <b>Creator:</b>
+       |  <b>${t("Creator:")}</b>
        |  <ul>
        |    <li>ZAN DoYe &lt;zandoye@gmail.com&gt;</li>
        |  </ul>
        |</html>""".stripMargin.stripPrefix("\n")))
       wrap
     }
-    tabbedPane.addTab("Contribution ", panelContributions)
+    tabbedPane.addTab(t("Contribution"), panelContributions)
 
     dialog.pack()
     dialog.setMinimumSize(dialog.getSize())
