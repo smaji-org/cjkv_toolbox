@@ -38,12 +38,12 @@ object toolbox extends ToolboxModule:
     PathRef(Task.dest)
 
   def releasePackaged= Task:
-    val dest= Task.dest / "toolbox.tgz"
-    copy(releasePackaged_any().path, Task.dest / "any_any" / "toolbox.tgz")
-    copy(releasePackaged_win_amd64().path, Task.dest / "win_amd64" / "toolbox.tgz")
-    copy(releasePackaged_win_386().path, Task.dest / "win_386" / "toolbox.tgz")
-    copy(releasePackaged_win_arm64().path, Task.dest / "win_arm64" / "toolbox.tgz")
-    copy(releasePackaged_win_arm().path, Task.dest / "win_arm" / "toolbox.tgz")
+    val dest= Task.dest
+    copy(releasePackaged_any().path, Task.dest / publishVersion / "any" / "any" / "toolbox.tgz")
+    copy(releasePackaged_win_amd64().path, Task.dest / publishVersion / "win" / "amd64" / "toolbox.tgz")
+    copy(releasePackaged_win_386().path, Task.dest / publishVersion / "win" / "386" / "toolbox.tgz")
+    copy(releasePackaged_win_arm64().path, Task.dest / publishVersion / "win" / "arm64" / "toolbox.tgz")
+    copy(releasePackaged_win_arm().path, Task.dest / publishVersion / "win" / "arm" / "toolbox.tgz")
     PathRef(dest)
 
   def releasePackaged_any= Task:
