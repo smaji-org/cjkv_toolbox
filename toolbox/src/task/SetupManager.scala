@@ -38,7 +38,7 @@ object Manager {
         import scala.sys.process.*
         val downloader= CjkvDownloader()
         val target= s"/module/${m.name}/${release.version}/$os/${arch}/${m.name}.tgz"
-        downloader.downloadAndExtract(target, modulesDir) match
+        downloader.downloadAndExtract(target, modulesDir, Some(m.name)) match
           case Failure(exception) => throw(exception)
           case Success(value) => ()
         val moduleDir= modulesDir.resolve(m.name)
@@ -220,7 +220,7 @@ object Manager {
         import scala.sys.process.*
         val downloader= CjkvDownloader()
         val target= s"/module/${m.name}/${release.version}/$os/${arch}/${m.name}.tgz"
-        downloader.downloadAndExtract(target, modulesDir) match
+        downloader.downloadAndExtract(target, modulesDir, Some(m.name)) match
           case Failure(exception) => throw(exception)
           case Success(value) => ()
         val moduleDir= modulesDir.resolve(m.name)
