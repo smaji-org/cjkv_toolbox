@@ -31,6 +31,7 @@ lazy val hostOs= {
     case os => os.toLowerCase()
 }
 
+lazy val jvmFeature= Runtime.version().feature()
 lazy val javaHome= Paths.get(System.getProperty("java.home"))
 
 lazy val jarPath= {

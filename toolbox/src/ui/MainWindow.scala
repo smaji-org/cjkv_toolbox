@@ -32,7 +32,7 @@ object MainWindow {
 
   lazy val trayIcon=
     val trayIcon= TrayIcon(icon.getImage(), "CJKV Toolbox")
-    if scale > 1 then
+    if (scale > 1) && (hostOs != "windows") && (hostOs != "darwin") && jvmFeature < 21 then
       trayIcon.setImageAutoSize(false)
       val traySize= trayIcon.getSize()
       val img= icon.getImage()
