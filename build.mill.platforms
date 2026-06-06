@@ -1,0 +1,405 @@
+package build
+import mill._, scalalib._
+
+trait ToolboxModule extends ScalaModule:
+  def scalaVersion= "3.3.7"
+  def scalacOptions= Seq(
+    "-Werror",
+    "-release:11",
+    "-Ysafe-init",
+    "-explain",
+    "-deprecation",
+    // "-Yexplicit-nulls",
+    )
+  /*
+  object test extends ScalaTests {
+    def mvnDeps = Seq(mvn"com.lihaoyi::utest:0.8.4")
+    def testFramework = "utest.runner.Framework"
+  }
+  */
+
+def os_linux     = Task.Source("platform/os/linux")
+def os_freebsd   = Task.Source("platform/os/freebsd")
+def os_openbsd   = Task.Source("platform/os/openbsd")
+def os_netbsd    = Task.Source("platform/os/netbsd")
+def os_solaris   = Task.Source("platform/os/solaris")
+def os_dragonfly = Task.Source("platform/os/dragonfly")
+def os_windows   = Task.Source("platform/os/windows")
+def os_darwin    = Task.Source("platform/os/darwin")
+
+def arch_386      = Task.Source("platform/arch/386")
+def arch_amd64    = Task.Source("platform/arch/amd64")
+def arch_arm      = Task.Source("platform/arch/arm")
+def arch_arm64    = Task.Source("platform/arch/arm64")
+def arch_loong64  = Task.Source("platform/arch/loong64")
+def arch_mips64le = Task.Source("platform/arch/mips64le")
+def arch_mipsle   = Task.Source("platform/arch/mipsle")
+def arch_ppc64le  = Task.Source("platform/arch/ppc64le")
+def arch_riscv64  = Task.Source("platform/arch/riscv64")
+def arch_s390x    = Task.Source("platform/arch/s390x")
+
+object toolbox extends ToolboxModule:
+  def publishVersion= "0.1.0"
+
+  def mvnDeps = Seq(
+    mvn"com.lihaoyi::scalatags:0.13.1",
+    mvn"com.lihaoyi::mainargs:0.7.8",
+    mvn"org.apache.commons:commons-compress:1.27.1",
+    )
+
+  inline def copy(from: os.Path, to: os.Path)=
+    os.copy(from, to, true, true, true, true, true)
+
+  def wrap= Task.Source("resources/toolbox")
+
+  def release= Task:
+    copy(assembly().path, Task.dest / "toolbox" / "toolbox.jar")
+    copy(installer.assembly().path, Task.dest / "toolbox" / "installer.jar")
+    PathRef(Task.dest)
+
+  def releasePackaged= Task:
+    val dest= Task.dest
+    copy(releasePackaged_linux_386().path       , Task.dest / publishVersion / "linux"     / "386"      / "toolbox.tgz")
+    copy(releasePackaged_linux_amd64().path     , Task.dest / publishVersion / "linux"     / "amd64"    / "toolbox.tgz")
+    copy(releasePackaged_linux_arm().path       , Task.dest / publishVersion / "linux"     / "arm"      / "toolbox.tgz")
+    copy(releasePackaged_linux_arm64().path     , Task.dest / publishVersion / "linux"     / "arm64"    / "toolbox.tgz")
+    copy(releasePackaged_linux_mipsle().path    , Task.dest / publishVersion / "linux"     / "mipsle"   / "toolbox.tgz")
+    copy(releasePackaged_linux_mips64le().path  , Task.dest / publishVersion / "linux"     / "mips64le" / "toolbox.tgz")
+    copy(releasePackaged_linux_ppc64le().path   , Task.dest / publishVersion / "linux"     / "ppc64le"  / "toolbox.tgz")
+    copy(releasePackaged_linux_riscv64().path   , Task.dest / publishVersion / "linux"     / "riscv64"  / "toolbox.tgz")
+    copy(releasePackaged_linux_loong64().path   , Task.dest / publishVersion / "linux"     / "loong64"  / "toolbox.tgz")
+    copy(releasePackaged_linux_s390x().path     , Task.dest / publishVersion / "linux"     / "s390x"    / "toolbox.tgz")
+    copy(releasePackaged_freebsd_386().path     , Task.dest / publishVersion / "freebsd"   / "386"      / "toolbox.tgz")
+    copy(releasePackaged_freebsd_amd64().path   , Task.dest / publishVersion / "freebsd"   / "amd64"    / "toolbox.tgz")
+    copy(releasePackaged_freebsd_arm().path     , Task.dest / publishVersion / "freebsd"   / "arm"      / "toolbox.tgz")
+    copy(releasePackaged_freebsd_arm64().path   , Task.dest / publishVersion / "freebsd"   / "arm64"    / "toolbox.tgz")
+    copy(releasePackaged_freebsd_riscv64().path , Task.dest / publishVersion / "freebsd"   / "riscv64"  / "toolbox.tgz")
+    copy(releasePackaged_netbsd_386().path      , Task.dest / publishVersion / "netbsd"    / "386"      / "toolbox.tgz")
+    copy(releasePackaged_netbsd_amd64().path    , Task.dest / publishVersion / "netbsd"    / "amd64"    / "toolbox.tgz")
+    copy(releasePackaged_netbsd_arm().path      , Task.dest / publishVersion / "netbsd"    / "arm"      / "toolbox.tgz")
+    copy(releasePackaged_netbsd_arm64().path    , Task.dest / publishVersion / "netbsd"    / "arm64"    / "toolbox.tgz")
+    copy(releasePackaged_openbsd_386().path     , Task.dest / publishVersion / "openbsd"   / "386"      / "toolbox.tgz")
+    copy(releasePackaged_openbsd_amd64().path   , Task.dest / publishVersion / "openbsd"   / "amd64"    / "toolbox.tgz")
+    copy(releasePackaged_openbsd_arm().path     , Task.dest / publishVersion / "openbsd"   / "arm"      / "toolbox.tgz")
+    copy(releasePackaged_openbsd_arm64().path   , Task.dest / publishVersion / "openbsd"   / "arm64"    / "toolbox.tgz")
+    copy(releasePackaged_solaris_amd64().path   , Task.dest / publishVersion / "solaris"   / "amd64"    / "toolbox.tgz")
+    copy(releasePackaged_dragonfly_amd64().path , Task.dest / publishVersion / "dragonfly" / "amd64"    / "toolbox.tgz")
+    copy(releasePackaged_windows_386().path     , Task.dest / publishVersion / "windows"   / "386"      / "toolbox.tgz")
+    copy(releasePackaged_windows_amd64().path   , Task.dest / publishVersion / "windows"   / "amd64"    / "toolbox.tgz")
+    copy(releasePackaged_windows_arm().path     , Task.dest / publishVersion / "windows"   / "arm"      / "toolbox.tgz")
+    copy(releasePackaged_windows_arm64().path   , Task.dest / publishVersion / "windows"   / "arm64"    / "toolbox.tgz")
+    copy(releasePackaged_darwin_amd64().path    , Task.dest / publishVersion / "darwin"    / "amd64"    / "toolbox.tgz")
+    copy(releasePackaged_darwin_arm64().path    , Task.dest / publishVersion / "darwin"    / "arm64"    / "toolbox.tgz")
+    PathRef(dest)
+
+  def releasePackaged_linux_386= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_linux().path, Task.dest / "toolbox" / "os")
+    copy(arch_386().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_linux_amd64= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_linux().path, Task.dest / "toolbox" / "os")
+    copy(arch_amd64().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_linux_arm64= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_linux().path, Task.dest / "toolbox" / "os")
+    copy(arch_arm64().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_linux_arm= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_linux().path, Task.dest / "toolbox" / "os")
+    copy(arch_arm().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_linux_mipsle= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_linux().path, Task.dest / "toolbox" / "os")
+    copy(arch_mipsle().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_linux_mips64le= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_linux().path, Task.dest / "toolbox" / "os")
+    copy(arch_mips64le().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_linux_ppc64le= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_linux().path, Task.dest / "toolbox" / "os")
+    copy(arch_ppc64le().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_linux_riscv64= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_linux().path, Task.dest / "toolbox" / "os")
+    copy(arch_riscv64().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_linux_loong64= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_linux().path, Task.dest / "toolbox" / "os")
+    copy(arch_loong64().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_linux_s390x= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_linux().path, Task.dest / "toolbox" / "os")
+    copy(arch_s390x().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_freebsd_386= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_freebsd().path, Task.dest / "toolbox" / "os")
+    copy(arch_386().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_freebsd_amd64= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_freebsd().path, Task.dest / "toolbox" / "os")
+    copy(arch_amd64().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_freebsd_arm64= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_freebsd().path, Task.dest / "toolbox" / "os")
+    copy(arch_arm64().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_freebsd_arm= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_freebsd().path, Task.dest / "toolbox" / "os")
+    copy(arch_arm().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_freebsd_riscv64= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_freebsd().path, Task.dest / "toolbox" / "os")
+    copy(arch_riscv64().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_netbsd_386= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_netbsd().path, Task.dest / "toolbox" / "os")
+    copy(arch_386().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_netbsd_amd64= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_netbsd().path, Task.dest / "toolbox" / "os")
+    copy(arch_amd64().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_netbsd_arm64= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_netbsd().path, Task.dest / "toolbox" / "os")
+    copy(arch_arm64().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_netbsd_arm= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_netbsd().path, Task.dest / "toolbox" / "os")
+    copy(arch_arm().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_openbsd_386= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_openbsd().path, Task.dest / "toolbox" / "os")
+    copy(arch_386().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_openbsd_amd64= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_openbsd().path, Task.dest / "toolbox" / "os")
+    copy(arch_amd64().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_openbsd_arm64= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_openbsd().path, Task.dest / "toolbox" / "os")
+    copy(arch_arm64().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_openbsd_arm= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_openbsd().path, Task.dest / "toolbox" / "os")
+    copy(arch_arm().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_solaris_amd64= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_solaris().path, Task.dest / "toolbox" / "os")
+    copy(arch_amd64().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_dragonfly_amd64= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_dragonfly().path, Task.dest / "toolbox" / "os")
+    copy(arch_amd64().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_windows_amd64= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(
+      native_aux.autostart.compile().path / "windows" / "amd64" / "cjkv_toolbox_autostart.exe",
+      Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    copy(os_windows().path, Task.dest / "toolbox" / "os")
+    copy(arch_amd64().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_windows_386= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(
+      native_aux.autostart.compile().path / "windows" / "386" / "cjkv_toolbox_autostart.exe",
+      Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    copy(os_windows().path, Task.dest / "toolbox" / "os")
+    copy(arch_386().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_windows_arm64= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(
+      native_aux.autostart.compile().path / "windows" / "arm64" / "cjkv_toolbox_autostart.exe",
+      Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    copy(os_windows().path, Task.dest / "toolbox" / "os")
+    copy(arch_arm64().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_windows_arm= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(
+      native_aux.autostart.compile().path / "windows" / "arm" / "cjkv_toolbox_autostart.exe",
+      Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    copy(os_windows().path, Task.dest / "toolbox" / "os")
+    copy(arch_arm().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_darwin_amd64= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_darwin().path, Task.dest / "toolbox" / "os")
+    copy(arch_amd64().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+  def releasePackaged_darwin_arm64= Task:
+    val dest= Task.dest / "toolbox.tgz"
+    copy(wrap().path, Task.dest / "toolbox" / "toolbox")
+    copy(os_darwin().path, Task.dest / "toolbox" / "os")
+    copy(arch_arm64().path, Task.dest / "toolbox" / "arch")
+    os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    PathRef(dest)
+
+object installer extends ToolboxModule:
+  def publishVersion= "0.1.0"
+
+  def mvnDeps = Seq(
+    mvn"com.lihaoyi::scalatags:0.13.1",
+    mvn"com.lihaoyi::mainargs:0.7.8",
+    )
+
+trait GoCross extends Module:
+  def cmd= Task:
+    s"cross_build ${moduleDir / "target.json"} ${moduleDir} ${Task.dest}"
+  def sources = Task.Source { moduleDir }
+  def allSources = Task { os.walk(sources().path).map(PathRef(_)) }
+  def compile= Task:
+    var dependOn= allSources()
+    val cross_build= "cross_build"
+    os.call((cross_build,
+      moduleDir / "target.json",
+      moduleDir ,
+      Task.dest), stdout=os.Inherit)
+    PathRef(Task.dest)
+
+object native_aux extends Module:
+  object autostart extends GoCross

@@ -51,19 +51,14 @@ object Manager {
         downloader.downloadAndExtract(target, modulesDir, Some(m.name)) match
           case Failure(exception) => throw(exception)
           case Success(value) => ()
+        println(s"extracted")
         val moduleDir= modulesDir.resolve(m.name)
-        val installerPath= {
-          val exePath= moduleDir.resolve("installer.exe")
-          val jarPath= moduleDir.resolve("installer.jar")
-          if (Files.exists(exePath)) {
-            exePath
-          } else if (Files.exists(jarPath)) {
-            jarPath
-          } else {
-            throw FileNotFoundException(exePath.toString)
-          }
-        }
+        val installerPath=
+          installer(m) match
+            case Some(path) => path
+            case None => throw FileNotFoundException("installer")
         File(installerPath.toString).setExecutable(true)
+        println(s"set exec ${installerPath}")
         val p= Process(
           wrapExe(installerPath.toString)
             ++ createCommandOpts(m.name),
@@ -89,9 +84,12 @@ object Manager {
 
   def installer(m: module.Module)=
     val moduleDir= modulesDir.resolve(m.name)
+    val binPath= moduleDir.resolve("installer")
     val exePath= moduleDir.resolve("installer.exe")
     val jarPath= moduleDir.resolve("installer.jar")
-    if Files.exists(exePath) then
+    if Files.exists(binPath) then
+      Some(binPath)
+    else if Files.exists(exePath) then
       Some(exePath)
     else if Files.exists(jarPath) then
       Some(jarPath)
@@ -104,17 +102,10 @@ object Manager {
       val r= Try {
         import scala.sys.process.*
         val moduleDir= modulesDir.resolve(m.name)
-        val uninstallerPath= {
-          val exePath= moduleDir.resolve("uninstaller.exe")
-          val jarPath= moduleDir.resolve("uninstaller.jar")
-          if (Files.exists(exePath)) {
-            exePath
-          } else if (Files.exists(jarPath)) {
-            jarPath
-          } else {
-            throw FileNotFoundException(exePath.toString)
-          }
-        }
+        val uninstallerPath=
+          uninstaller(m) match
+            case Some(path) => path
+            case None => throw FileNotFoundException("uninstaller")
         File(uninstallerPath.toString).setExecutable(true)
         val p= Process(
           wrapExe(uninstallerPath.toString)
@@ -141,9 +132,12 @@ object Manager {
 
   def uninstaller(m: module.Module)=
     val moduleDir= modulesDir.resolve(m.name)
+    val binPath= moduleDir.resolve("uninstaller")
     val exePath= moduleDir.resolve("uninstaller.exe")
     val jarPath= moduleDir.resolve("uninstaller.jar")
-    if Files.exists(exePath) then
+    if Files.exists(binPath) then
+      Some(binPath)
+    else if Files.exists(exePath) then
       Some(exePath)
     else if Files.exists(jarPath) then
       Some(jarPath)
@@ -156,17 +150,10 @@ object Manager {
       val r= Try {
         import scala.sys.process.*
         val moduleDir= modulesDir.resolve(m.name)
-        val uninstallerPath= {
-          val exePath= moduleDir.resolve("setup.exe")
-          val jarPath= moduleDir.resolve("setup.jar")
-          if (Files.exists(exePath)) {
-            exePath
-          } else if (Files.exists(jarPath)) {
-            jarPath
-          } else {
-            throw FileNotFoundException(exePath.toString)
-          }
-        }
+        val uninstallerPath=
+          uninstaller(m) match
+            case Some(path) => path
+            case None => throw FileNotFoundException("setup")
         File(uninstallerPath.toString).setExecutable(true)
         val p= Process(
           wrapExe(uninstallerPath.toString)
@@ -190,9 +177,12 @@ object Manager {
 
   def setuper(m: module.Module)=
     val moduleDir= modulesDir.resolve(m.name)
+    val binPath= moduleDir.resolve("setup")
     val exePath= moduleDir.resolve("setup.exe")
     val jarPath= moduleDir.resolve("setup.jar")
-    if Files.exists(exePath) then
+    if Files.exists(binPath) then
+      Some(binPath)
+    else if Files.exists(exePath) then
       Some(exePath)
     else if Files.exists(jarPath) then
       Some(jarPath)
@@ -235,17 +225,10 @@ object Manager {
           case Success(value) => ()
         val moduleDir= modulesDir.resolve(m.name)
         if debug then println(s"moduleDir is $moduleDir")
-        val installerPath= {
-          val exePath= moduleDir.resolve("installer.exe")
-          val jarPath= moduleDir.resolve("installer.jar")
-          if (Files.exists(exePath)) {
-            exePath
-          } else if (Files.exists(jarPath)) {
-            jarPath
-          } else {
-            throw FileNotFoundException(exePath.toString)
-          }
-        }
+        val installerPath=
+          installer(m) match
+            case Some(path) => path
+            case None => throw FileNotFoundException("installer")
         if debug then println(s"installerPath is $installerPath")
         File(installerPath.toString).setExecutable(true)
         if debug then println(s"begin installing ${m.name}, $os, ${arch}")

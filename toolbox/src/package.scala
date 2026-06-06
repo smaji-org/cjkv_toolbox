@@ -15,10 +15,16 @@ import java.nio.file.{Path, Paths, Files}
 var swingInitialized= false
 
 lazy val hostArch= {
-  System.getProperty("os.arch") match
-    case "x86" => "386"
+  System.getProperty("os.arch").toLowerCase() match
+    case "x86" | "x86_32" | "i386" => "386"
     case "x86_64" => "amd64"
-    case arch => arch.toLowerCase()
+    case "aarch64" | "arm64" => "arm64"
+    case os if os.startsWith("arm") => "arm"
+    case "loongarch64" => "loong64"
+    case "mipsel" => "mipsle"
+    case "mips64el" => "mips64le"
+    case "ppc64el" => "ppc64le"
+    case arch => arch
 }
 
 val anyArch= "any"
