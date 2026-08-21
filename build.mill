@@ -58,8 +58,12 @@ object toolbox extends ToolboxModule:
     copy(
       native_aux.autostart.compile().path / "windows" / "amd64" / "cjkv_toolbox_autostart.exe",
       Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    copy(
+      native_aux.win_font.compile().path / "windows" / "amd64" / "cjkv_toolbox_win_font.exe",
+      Task.dest / "toolbox" / "cjkv_toolbox_win_font.exe")
     os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
     os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_win_font.exe")
     PathRef(dest)
 
   def releasePackaged_win_386= Task:
@@ -67,8 +71,12 @@ object toolbox extends ToolboxModule:
     copy(
       native_aux.autostart.compile().path / "windows" / "386" / "cjkv_toolbox_autostart.exe",
       Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    copy(
+      native_aux.win_font.compile().path / "windows" / "386" / "cjkv_toolbox_win_font.exe",
+      Task.dest / "toolbox" / "cjkv_toolbox_win_font.exe")
     os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
     os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_win_font.exe")
     PathRef(dest)
 
   def releasePackaged_win_arm64= Task:
@@ -85,8 +93,12 @@ object toolbox extends ToolboxModule:
     copy(
       native_aux.autostart.compile().path / "windows" / "arm" / "cjkv_toolbox_autostart.exe",
       Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    copy(
+      native_aux.win_font.compile().path / "windows" / "arm" / "cjkv_toolbox_win_font.exe",
+      Task.dest / "toolbox" / "cjkv_toolbox_win_font.exe")
     os.call(cmd=("tar", "-czf", dest, "-C", release().path, "toolbox", "-C", Task.dest, "toolbox"))
     os.remove(Task.dest / "toolbox" / "cjkv_toolbox_autostart.exe")
+    os.remove(Task.dest / "toolbox" / "cjkv_toolbox_win_font.exe")
     PathRef(dest)
 
 object installer extends ToolboxModule:
@@ -113,3 +125,4 @@ trait GoCross extends Module:
 
 object native_aux extends Module:
   object autostart extends GoCross
+  object win_font extends GoCross
