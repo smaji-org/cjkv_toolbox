@@ -94,7 +94,7 @@ def createPanelConfig(emHeight: Int, padding: Int)= {
   scaleSelector.setMaximumSize(scaleSelector.getPreferredSize())
 
   panelUiScale.add(scaleSelector)
-  panelUiScale.add(JLabel(t("UI Scale for HiDPI, will take effect after restarting")))
+  panelUiScale.add(JLabel(t("HiDPI UI Scale (Restart to apply)")))
   panelUiScale.add(Box.createHorizontalGlue())
 
   // panelUi signal
@@ -125,14 +125,14 @@ def createPanelConfig(emHeight: Int, padding: Int)= {
   panelUpdate.add(Box.createVerticalGlue())
 
   panelUpdateToolbox.setLineBoxLayout()
-  val checkUpdateToolbox= JCheckBox(t("Update Toolbox automatically"))
+  val checkUpdateToolbox= JCheckBox(t("Auto update Toolbox"))
   panelUpdateToolbox.add(checkUpdateToolbox)
   panelUpdateToolbox.add(Box.createHorizontalGlue())
   val btnUpdateToolbox= JButton(t("Update Toolbox now"))
   panelUpdateToolbox.add(btnUpdateToolbox)
 
   panelUpdateModules.setLineBoxLayout()
-  val checkUpdateModules= JCheckBox(t("Update the modules automatically"))
+  val checkUpdateModules= JCheckBox(t("Auto update modules"))
   panelUpdateModules.add(checkUpdateModules)
   panelUpdateModules.add(Box.createHorizontalGlue)
   val btnUpdateModules= JButton(t("Update modules now"))
@@ -142,8 +142,8 @@ def createPanelConfig(emHeight: Int, padding: Int)= {
   val intervalTime= IntervalComboBox()
   intervalTime.setMaximumSize(intervalTime.getPreferredSize())
 
+  panelUpdatePerodic.add(JLabel(t("Check for updates every:")))
   panelUpdatePerodic.add(intervalTime)
-  panelUpdatePerodic.add(JLabel(t("Periodic update check")))
   panelUpdatePerodic.add(Box.createHorizontalGlue())
   val btnUpdateCheck= JButton(t("Check now"))
   panelUpdatePerodic.add(btnUpdateCheck)
@@ -196,7 +196,7 @@ def createPanelConfig(emHeight: Int, padding: Int)= {
   panelStartup.setBorder(EmptyBorder(5,5,5,5))
 
   panelStartup.add(Box.createVerticalGlue())
-  val checkAutostart= JCheckBox(t("Autostart Toolbox"))
+  val checkAutostart= JCheckBox(t("Launch on startup"))
   panelStartup.add(checkAutostart)
   panelStartup.add(Box.createVerticalGlue())
   val checkMinimized= JCheckBox(t("Start minimized"))
