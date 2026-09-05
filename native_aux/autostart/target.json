@@ -1,7 +1,0 @@
-{
-  "defaultOs": ["windows"],
-  "defaultArch": ["386", "amd64", "arm", "arm64"],
-
-  "additionalTarget": {
-  }
-}

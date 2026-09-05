@@ -111,14 +111,14 @@ object installer extends ToolboxModule:
 
 trait GoCross extends Module:
   def cmd= Task:
-    s"cross_build ${moduleDir / "target.json"} ${moduleDir} ${Task.dest}"
+    s"go_cross_build ${moduleDir / "cross_build.json"} ${moduleDir} ${Task.dest}"
   def sources = Task.Source { moduleDir }
   def allSources = Task { os.walk(sources().path).map(PathRef(_)) }
   def compile= Task:
     var dependOn= allSources()
-    val cross_build= "cross_build"
+    val cross_build= "go_cross_build"
     os.call((cross_build,
-      moduleDir / "target.json",
+      moduleDir / "cross_build.json",
       moduleDir ,
       Task.dest), stdout=os.Inherit)
     PathRef(Task.dest)
