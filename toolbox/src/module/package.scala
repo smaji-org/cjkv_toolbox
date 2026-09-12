@@ -28,6 +28,7 @@ case class Release(
   val dateTime: OffsetDateTime=
     OffsetDateTime.now(zoneUTC),
   val comment: String= "",
+  val data: Option[String]= None,
   val platforms: OsHostMap,
   )
 {

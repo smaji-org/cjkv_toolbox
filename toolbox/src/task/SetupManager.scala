@@ -51,7 +51,13 @@ object Manager {
         downloader.downloadAndExtract(target, modulesDir, Some(m.name)) match
           case Failure(exception) => throw(exception)
           case Success(value) => ()
-        println(s"extracted")
+        println(s"module extracted")
+        release.data.foreach(data =>
+          val target= s"/module/${m.name}/${release.version}/${data}"
+          downloader.downloadAndExtract(target, modulesDir.resolve(m.name)) match
+            case Failure(exception) => throw(exception)
+            case Success(value) => ()
+          println(s"data extracted"))
         val moduleDir= modulesDir.resolve(m.name)
         val installerPath=
           installer(m) match

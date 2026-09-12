@@ -313,12 +313,17 @@ object Manager {
         val datetime= time.OffsetDateTime.parse(
           xpathEval.getNode("datetime", release).getTextContent().trim())
         val comment= xpathEval.getNode("comment", release).getTextContent().trim()
+        val data=
+          if xpathEval.getBoolean("data", release) then
+            Some(xpathEval.getNode("data", release).getTextContent().trim())
+          else
+            None
         val platforms= xpathEval.getNodeSet("os", release) match {
           case null=> Map[String, Set[String]]()
           case nodeList: dom.NodeList =>
             nodeList.asScala.map(loadOs).toMap
         }
-        Release(module, version, datetime, comment, platforms)
+        Release(module, version, datetime, comment, data, platforms)
       }
 
       val module= Module(name, description, ArraySeq())
