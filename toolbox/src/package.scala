@@ -68,7 +68,7 @@ lazy val userConfigDir=
 lazy val userDataDir=
   hostOs match
     case "windows" => Paths.get(System.getenv("LocalAppData"))
-    case _ => Option(System.getenv("XDG_DATA_HOME ")).map(Paths.get(_))
+    case _ => Option(System.getenv("XDG_DATA_HOME")).map(Paths.get(_))
       .getOrElse(Paths.get(System.getProperty("user.home"), ".local", "share"))
 
 lazy val userFontDir=
