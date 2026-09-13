@@ -1,5 +1,7 @@
 # Smaji CJKV Toolbox
 
+[![CI](https://github.com/smaji-org/cjkv_toolbox/actions/workflows/scala.yml/badge.svg)](https://github.com/smaji-org/cjkv_toolbox/actions/workflows/scala.yml)
+
 Smaji CJKV Toolbox is a cross-platform module manager designed for CJKV (Chinese, Japanese, Korean, Vietnamese) related tools. It provides a unified platform to easily discover, install, update, and manage modules such as input methods, fonts, and other CJKV-related components.
 
 ## Features
