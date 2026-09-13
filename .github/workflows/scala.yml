@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+    paths-ignore:
+      - "**.md"
+  pull_request:
+    branches: [ master ]
+    paths-ignore:
+      - "**.md"
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: coursier-setup-action
+        uses: coursier/setup-action@v3.0.2
+
+      - name: Cache
+        uses: coursier/cache-action@v7
+        with:
+          extraMillFiles: '["*.mill"]'
+
+      - name: On Linux
+        if: runner.os == 'Linux'
+        run: ./mill toolbox.compile
+
+      - name: on macOS
+        if: runner.os == 'macOS'
+        run: ./mill toolbox.compile
+
+      - name: On Windows
+        if: runner.os == 'Windows'
+        run: .\mill.bat toolbox.compile
+
