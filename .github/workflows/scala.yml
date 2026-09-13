@@ -34,15 +34,11 @@ jobs:
         with:
           extraMillFiles: '["*.mill"]'
 
-      - name: On Linux
-        if: runner.os == 'Linux'
-        run: ./mill toolbox.compile
+      - name: Release
+        if: runner.os != 'Windows'
+        run: ./mill toolbox.release
 
-      - name: on macOS
-        if: runner.os == 'macOS'
-        run: ./mill toolbox.compile
-
-      - name: On Windows
+      - name: Release on Windows
         if: runner.os == 'Windows'
-        run: .\mill.bat toolbox.compile
+        run: .\mill.bat toolbox.release
 
